@@ -1,0 +1,15 @@
+name: "Planetary Boundaries Workshop"
+output_dir: 'docs'
+navbar:
+  title: "Planetary Boundaries Workshop"
+  left:
+    - text: "Workshop Information"
+      href: workshop_info.html
+    - text: "Pre-workshop"
+      href: pre_workshop.html      
+    - text: "A step-by-step guide"
+      href: step_by_step_guide.html
+output:
+  html_document:
+    toc: FALSE
+    highlight: textmate

@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>step_by_step_guide</title>
+
+<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Planetary Boundaries Workshop</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="workshop_info.html">Workshop Information</a>
+</li>
+<li>
+  <a href="pre_workshop.html">Pre-workshop</a>
+</li>
+<li>
+  <a href="step_by_step_guide.html">A step-by-step guide</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+
+</div>
+
+
+<div id="step-by-step-guide" class="section level1">
+<h1>Step-by-step guide</h1>
+<p>This workflow should show the full strength of the <a
+href="https://hope-uib-bio.github.io/R-Ratepol-package/"><em>RRatepol
+package</em></a> and serve as step-by-step guidance starting from
+downloading dataset from Neotoma, building age-depth models, to
+estimating rate-of-change using age uncertainty.</p>
+<p>:warning: <strong>This workflow is only meant as an example</strong>:
+There are several additional steps for data preparation which should be
+done to properly implement RRatepol and asssess rate of change of a
+fossil pollen dataset from Neotoma!</p>
+<div id="install-packages" class="section level2">
+<h2>Install packages</h2>
+<p>Please follow the <a
+href="https://ondrejmottl.github.io/APD_R-Ratepol_workshop/pre_workshop.html">pre-workshop
+instructions</a> to make sure all packages are installed.</p>
+</div>
+<div id="attach-packages" class="section level2">
+<h2>Attach packages</h2>
+<pre class="r"><code>library(tidyverse) # general data wrangling and visualisation
+library(pander) # nice tables
+library(RRatepol) # rate-of-vegetation change ! v1.2.0 !
+library(neotoma2) # obtain data from the Neotoma database
+library(Bchron) # age-depth modeling
+library(janitor) # string cleaning</code></pre>
+</div>
+<div id="download-a-dataset-from-neotoma" class="section level2">
+<h2>Download a dataset from Neotoma</h2>
+<p>Here we have selected the <strong>Ahakagyezi Swamp</strong>
+record.</p>
+<pre class="r"><code>sel_dataset_download &lt;-
+  neotoma2::get_downloads(50216)</code></pre>
+</div>
+<div id="prepare-the-pollen-counts" class="section level2">
+<h2>Prepare the pollen counts</h2>
+<pre class="r"><code># get samples
+sel_counts &lt;-
+  neotoma2::samples(sel_dataset_download)
+
+# select only &quot;pollen&quot; taxa
+sel_taxon_list_selected &lt;-
+  neotoma2::taxa(sel_dataset_download) %&gt;%
+  dplyr::filter(element == &quot;pollen&quot;) %&gt;%
+  purrr::pluck(&quot;variablename&quot;)
+
+# prepare taxa table
+sel_counts_selected &lt;-
+  sel_counts %&gt;%
+  as.data.frame() %&gt;%
+  dplyr::mutate(sample_id = as.character(sampleid)) %&gt;%
+  tibble::as_tibble() %&gt;%
+  dplyr::select(&quot;sample_id&quot;, &quot;value&quot;, &quot;variablename&quot;) %&gt;%
+  # only include selected taxons
+  dplyr::filter(
+    variablename %in% sel_taxon_list_selected
+  ) %&gt;%
+  # turn into the wider format
+  tidyr::pivot_wider(
+    names_from = &quot;variablename&quot;,
+    values_from = &quot;value&quot;,
+    values_fill = 0
+  ) %&gt;%
+  # clean names
+  janitor::clean_names()
+
+head(sel_counts_selected)[, 1:5]</code></pre>
+<table>
+<colgroup>
+<col width="14%" />
+<col width="15%" />
+<col width="39%" />
+<col width="19%" />
+<col width="10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">sample_id</th>
+<th align="center">rhamnaceae</th>
+<th align="center">combretaceae_melastomataceae</th>
+<th align="center">ranunculaceae</th>
+<th align="center">prunus</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">500543</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">500544</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">2</td>
+</tr>
+<tr class="odd">
+<td align="center">500545</td>
+<td align="center">6</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">500547</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">500548</td>
+<td align="center">7</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr class="even">
+<td align="center">500549</td>
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+</tr>
+</tbody>
+</table>
+<p>Here, we strongly advocate that attention should be paid to the
+selection of the ecological groups as well as the harmonisation of the
+pollen taxa. However, that is not the subject of this workflow, but any
+analysis to be published needs careful preparation of the fossil pollen
+datasets before using R-Ratepol!</p>
+<p>We can now try to visualise the taxa per sample_id</p>
+<pre class="r"><code>sel_counts_selected %&gt;%
+  tibble::rowid_to_column(&quot;ID&quot;) %&gt;%
+  tidyr::pivot_longer(
+    cols = -c(sample_id, ID),
+    names_to = &quot;taxa&quot;,
+    values_to = &quot;n_grains&quot;
+  ) %&gt;%
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = ID,
+      y = n_grains,
+      fill = taxa
+    ),
+  ) +
+  ggplot2::geom_bar(
+    stat = &quot;identity&quot;,
+    position = &quot;fill&quot;
+  ) +
+  ggplot2::labs(
+    x = &quot;sample_id&quot;,
+    y = &quot;proportion of pollen grains&quot;
+  ) +
+  ggplot2::theme(
+    axis.text.x = ggplot2::element_blank(),
+    legend.position = &quot;none&quot;
+  )</code></pre>
+<p><img src="step_by_step_guide_files/figure-gfm/count_vis-1.png" /></p>
+</div>
+<div id="preparation-of-the-levels" class="section level2">
+<h2>Preparation of the levels</h2>
+<div id="sample-depth" class="section level3">
+<h3>Sample depth</h3>
+<p>Extract depth for each level</p>
+<pre class="r"><code>sel_level &lt;-
+  neotoma2::samples(sel_dataset_download) %&gt;%
+  tibble::as_tibble() %&gt;%
+  dplyr::mutate(sample_id = as.character(sampleid)) %&gt;%
+  dplyr::distinct(sample_id, depth) %&gt;%
+  dplyr::relocate(sample_id)
+
+head(sel_level)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="center">sample_id</th>
+<th align="center">depth</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">500543</td>
+<td align="center">703</td>
+</tr>
+<tr class="even">
+<td align="center">500544</td>
+<td align="center">753</td>
+</tr>
+<tr class="odd">
+<td align="center">500545</td>
+<td align="center">803</td>
+</tr>
+<tr class="even">
+<td align="center">500547</td>
+<td align="center">853</td>
+</tr>
+<tr class="odd">
+<td align="center">500548</td>
+<td align="center">908</td>
+</tr>
+<tr class="even">
+<td align="center">500549</td>
+<td align="center">953</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="age-depth-modelling" class="section level3">
+<h3>Age-depth modelling</h3>
+<p>We will recalculate the age-depth model ‘de novo’ using the <a
+href="http://andrewcparnell.github.io/Bchron/"><em>Bchron</em>
+package</a>.</p>
+<div id="prepare-chron.control-table-and-run-bchron"
+class="section level4">
+<h4>Prepare chron.control table and run Bchron</h4>
+<p>The chronology control table contains all the dates (mostly
+radiocarbon) to create the age-depth model.</p>
+<p>Here we only present a few of the important steps of preparation of
+the chronology control table. There are many more potential issues, but
+solving those is not the focus of this workflow.</p>
+<pre class="r"><code># First, get the chronologies and check which we want to use used
+sel_chron_control_table_download &lt;-
+  neotoma2::chroncontrols(sel_dataset_download)
+
+print(sel_chron_control_table_download)</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="11%" />
+<col width="19%" />
+<col width="9%" />
+<col width="15%" />
+<col width="21%" />
+<col width="22%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">siteid</th>
+<th align="center">chronologyid</th>
+<th align="center">depth</th>
+<th align="center">thickness</th>
+<th align="center">agelimitolder</th>
+<th align="center">chroncontrolid</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">27552</td>
+<td align="center">35429</td>
+<td align="center">330</td>
+<td align="center">20</td>
+<td align="center">1150</td>
+<td align="center">110443</td>
+</tr>
+<tr class="even">
+<td align="center">27552</td>
+<td align="center">35429</td>
+<td align="center">1892</td>
+<td align="center">16</td>
+<td align="center">14860</td>
+<td align="center">110449</td>
+</tr>
+<tr class="odd">
+<td align="center">27552</td>
+<td align="center">35429</td>
+<td align="center">1175</td>
+<td align="center">30</td>
+<td align="center">5250</td>
+<td align="center">110446</td>
+</tr>
+<tr class="even">
+<td align="center">27552</td>
+<td align="center">35429</td>
+<td align="center">2060</td>
+<td align="center">14</td>
+<td align="center">15750</td>
+<td align="center">110451</td>
+</tr>
+<tr class="odd">
+<td align="center">27552</td>
+<td align="center">35429</td>
+<td align="center">2235</td>
+<td align="center">30</td>
+<td align="center">24200</td>
+<td align="center">110454</td>
+</tr>
+<tr class="even">
+<td align="center">27552</td>
+<td align="center">35429</td>
+<td align="center">2087</td>
+<td align="center">27</td>
+<td align="center">18890</td>
+<td align="center">110453</td>
+</tr>
+</tbody>
+</table>
+<p>Table continues below</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">agelimityounger</th>
+<th align="center">chroncontrolage</th>
+<th align="center">chroncontroltype</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1010</td>
+<td align="center">1080</td>
+<td align="center">Radiocarbon</td>
+</tr>
+<tr class="even">
+<td align="center">14660</td>
+<td align="center">14760</td>
+<td align="center">Radiocarbon</td>
+</tr>
+<tr class="odd">
+<td align="center">5110</td>
+<td align="center">5180</td>
+<td align="center">Radiocarbon</td>
+</tr>
+<tr class="even">
+<td align="center">15530</td>
+<td align="center">15640</td>
+<td align="center">Radiocarbon</td>
+</tr>
+<tr class="odd">
+<td align="center">23680</td>
+<td align="center">23940</td>
+<td align="center">Radiocarbon</td>
+</tr>
+<tr class="even">
+<td align="center">18650</td>
+<td align="center">18770</td>
+<td align="center">Radiocarbon</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># prepare the table
+sel_chron_control_table &lt;-
+  sel_chron_control_table_download %&gt;%
+  # Here select the ID of one of the chronology
+  dplyr::filter(chronologyid == 35430) %&gt;%
+  tibble::as_tibble() %&gt;%
+  # Here we calculate the error as the average of the age `limitolder` and
+  #   `agelimityounger`
+  dplyr::mutate(
+    error = round((agelimitolder - agelimityounger) / 2)
+  ) %&gt;%
+  # As Bchron cannot accept a error of 0, we need to replace the value with 1
+  dplyr::mutate(
+    error = replace(error, error == 0, 1),
+    error = ifelse(is.na(error), 1, error)
+  ) %&gt;%
+  # We need to specify which calibration curve should be used for what point
+  dplyr::mutate(
+    curve = ifelse(as.data.frame(sel_dataset_download)[&quot;lat&quot;] &gt; 0, &quot;intcal20&quot;, &quot;shcal20&quot;),
+    curve = ifelse(chroncontroltype != &quot;Radiocarbon&quot;, &quot;normal&quot;, curve)
+  ) %&gt;%
+  tibble::column_to_rownames(&quot;chroncontrolid&quot;) %&gt;%
+  dplyr::arrange(depth) %&gt;%
+  dplyr::select(
+    chroncontrolage, error, depth, thickness, chroncontroltype, curve
+  )
+
+head(sel_chron_control_table)</code></pre>
+<table>
+<colgroup>
+<col width="24%" />
+<col width="10%" />
+<col width="10%" />
+<col width="15%" />
+<col width="26%" />
+<col width="13%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">chroncontrolage</th>
+<th align="center">error</th>
+<th align="center">depth</th>
+<th align="center">thickness</th>
+<th align="center">chroncontroltype</th>
+<th align="center">curve</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">1080</td>
+<td align="center">70</td>
+<td align="center">330</td>
+<td align="center">20</td>
+<td align="center">Radiocarbon</td>
+<td align="center">shcal20</td>
+</tr>
+<tr class="even">
+<td align="center">3070</td>
+<td align="center">70</td>
+<td align="center">675</td>
+<td align="center">30</td>
+<td align="center">Radiocarbon</td>
+<td align="center">shcal20</td>
+</tr>
+<tr class="odd">
+<td align="center">3360</td>
+<td align="center">70</td>
+<td align="center">820</td>
+<td align="center">20</td>
+<td align="center">Radiocarbon</td>
+<td align="center">shcal20</td>
+</tr>
+<tr class="even">
+<td align="center">5180</td>
+<td align="center">70</td>
+<td align="center">1175</td>
+<td align="center">30</td>
+<td align="center">Radiocarbon</td>
+<td align="center">shcal20</td>
+</tr>
+<tr class="odd">
+<td align="center">5870</td>
+<td align="center">90</td>
+<td align="center">1335</td>
+<td align="center">20</td>
+<td align="center">Radiocarbon</td>
+<td align="center">shcal20</td>
+</tr>
+<tr class="even">
+<td align="center">9580</td>
+<td align="center">60</td>
+<td align="center">1535</td>
+<td align="center">30</td>
+<td align="center">Radiocarbon</td>
+<td align="center">shcal20</td>
+</tr>
+</tbody>
+</table>
+<p>As this is just a toy example, we will use only the iteration
+multiplier (<code>i_multiplier</code>) of <code>0.1</code> to reduce the
+computation time. However, we strongly recommend increasing it to 5 for
+any normal age-depth model construction.</p>
+<pre class="r"><code>i_multiplier &lt;- 0.1 # increase to 5
+
+# Those are default values suggested by the Bchron package
+n_iteration_default &lt;- 10e3
+n_burn_default &lt;- 2e3
+n_thin_default &lt;- 8
+
+# Let&#39;s multiply them by our i_multiplier
+n_iteration &lt;- n_iteration_default * i_multiplier
+n_burn &lt;- n_burn_default * i_multiplier
+n_thin &lt;- max(c(1, n_thin_default * i_multiplier))
+
+# run Bchron
+sel_bchron &lt;-
+  Bchron::Bchronology(
+    ages = sel_chron_control_table$chroncontrolage,
+    ageSds = sel_chron_control_table$error,
+    positions = sel_chron_control_table$depth,
+    calCurves = sel_chron_control_table$curve,
+    positionThicknesses = sel_chron_control_table$thickness,
+    iterations = n_iteration,
+    burn = n_burn,
+    thin = n_thin
+  )</code></pre>
+<p>Visually check the age-depth models</p>
+<pre class="r"><code>plot(sel_bchron)</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/bchron_figure-1.png" /></p>
+</div>
+<div id="predict-ages" class="section level4">
+<h4>Predict ages</h4>
+<p>Let’s first extract posterior ages (i.e. possible ages) from the
+age-depth model.</p>
+<pre class="r"><code>age_position &lt;-
+  Bchron:::predict.BchronologyRun(object = sel_bchron, newPositions = sel_level$depth)
+
+age_uncertainties &lt;-
+  age_position %&gt;%
+  as.data.frame() %&gt;%
+  dplyr::mutate_all(., as.integer) %&gt;%
+  as.matrix()
+
+colnames(age_uncertainties) &lt;- sel_level$sample_id
+
+head(age_uncertainties, n = 8)[, 1:8]</code></pre>
+<p>Here we see samples (e.g., 500543,500544, 500547,…) and their
+possible ages (age-sequence) with each model iteration (posterior). Each
+age-sequence is similar but there are differences of tens or hundreds of
+years. We will call this <em>the uncertainty matrix</em>.</p>
+<table>
+<colgroup>
+<col width="12%" />
+<col width="12%" />
+<col width="12%" />
+<col width="12%" />
+<col width="12%" />
+<col width="12%" />
+<col width="12%" />
+<col width="12%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">500543</th>
+<th align="center">500544</th>
+<th align="center">500545</th>
+<th align="center">500547</th>
+<th align="center">500548</th>
+<th align="center">500549</th>
+<th align="center">500550</th>
+<th align="center">500546</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">3172</td>
+<td align="center">3364</td>
+<td align="center">3556</td>
+<td align="center">3798</td>
+<td align="center">4435</td>
+<td align="center">4913</td>
+<td align="center">5288</td>
+<td align="center">5361</td>
+</tr>
+<tr class="even">
+<td align="center">3409</td>
+<td align="center">3499</td>
+<td align="center">3590</td>
+<td align="center">3981</td>
+<td align="center">4580</td>
+<td align="center">5070</td>
+<td align="center">5231</td>
+<td align="center">5283</td>
+</tr>
+<tr class="odd">
+<td align="center">3162</td>
+<td align="center">3294</td>
+<td align="center">3546</td>
+<td align="center">3919</td>
+<td align="center">4114</td>
+<td align="center">4417</td>
+<td align="center">4591</td>
+<td align="center">4619</td>
+</tr>
+<tr class="even">
+<td align="center">3210</td>
+<td align="center">3470</td>
+<td align="center">3730</td>
+<td align="center">3941</td>
+<td align="center">4147</td>
+<td align="center">4374</td>
+<td align="center">4574</td>
+<td align="center">4623</td>
+</tr>
+<tr class="odd">
+<td align="center">3354</td>
+<td align="center">3534</td>
+<td align="center">3595</td>
+<td align="center">4271</td>
+<td align="center">4614</td>
+<td align="center">4721</td>
+<td align="center">4827</td>
+<td align="center">4863</td>
+</tr>
+<tr class="even">
+<td align="center">3258</td>
+<td align="center">3349</td>
+<td align="center">3550</td>
+<td align="center">3775</td>
+<td align="center">3942</td>
+<td align="center">4385</td>
+<td align="center">4955</td>
+<td align="center">5034</td>
+</tr>
+<tr class="odd">
+<td align="center">3317</td>
+<td align="center">3445</td>
+<td align="center">3572</td>
+<td align="center">3765</td>
+<td align="center">4014</td>
+<td align="center">4186</td>
+<td align="center">4342</td>
+<td align="center">4400</td>
+</tr>
+<tr class="even">
+<td align="center">3217</td>
+<td align="center">3304</td>
+<td align="center">3574</td>
+<td align="center">3650</td>
+<td align="center">3706</td>
+<td align="center">3751</td>
+<td align="center">3797</td>
+<td align="center">3813</td>
+</tr>
+</tbody>
+</table>
+<p>We can visualise these “possible ages” (age-sequence) of each
+iteration.</p>
+<pre class="r"><code># create a data.frame for plotting
+data_age_uncertainties &lt;-
+  age_uncertainties %&gt;%
+  as.data.frame() %&gt;%
+  tibble::rowid_to_column(&quot;ID&quot;) %&gt;%
+  tidyr::pivot_longer(
+    cols = -ID,
+    names_to = &quot;sample_id&quot;,
+    values_to = &quot;age&quot;
+  ) %&gt;%
+  dplyr::left_join(
+    sel_level,
+    by = dplyr::join_by(sample_id)
+  )</code></pre>
+<p>Each line is a single potential age-depth model iteration
+(age-sequence). Green points represent the radiocarbon dates. Horizontal
+lines are depths of our samples.</p>
+<pre class="r"><code>(
+  fig_age_uncertainties &lt;-
+    data_age_uncertainties %&gt;%
+    ggplot2::ggplot(
+      mapping = ggplot2::aes(
+        x = age,
+        y = depth
+      )
+    ) +
+    ggplot2::geom_line(
+      mapping = ggplot2::aes(
+        group = ID
+      ),
+      alpha = 0.05,
+      linewidth = 0.1
+    ) +
+    ggplot2::geom_hline(
+      yintercept = sel_level$depth,
+      lty = 2,
+      color = &quot;gray50&quot;,
+      alpha = 0.5,
+      linewidth = 0.1
+    ) +
+    ggplot2::geom_point(
+      data = sel_chron_control_table,
+      mapping = ggplot2::aes(
+        x = chroncontrolage
+      ),
+      color = &quot;green&quot;,
+      shape = 15,
+      size = 3
+    ) +
+    ggplot2::scale_y_continuous(trans = &quot;reverse&quot;) +
+    ggplot2::scale_x_continuous(trans = &quot;reverse&quot;)
+)</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/age_uncertainties_vis_lines-1.png" /></p>
+<p>We can visualise all age-depth “possible ages” together as the range
+of values. Here, each line representing one sampled depth in our
+record.</p>
+<pre class="r"><code>data_age_uncertainties %&gt;%
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = age,
+      y = depth,
+      group = depth
+    )
+  ) +
+  ggplot2::geom_hline(
+    yintercept = sel_level$depth,
+    lty = 2,
+    color = &quot;gray50&quot;,
+    alpha = 0.5,
+    linewidth = 0.1
+  ) +
+  ggplot2::geom_boxplot(
+    outlier.shape = NA
+  )</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/age_uncertainties_vis_boxplot-1.png" /></p>
+<p>Let’s take the median age of all possible ages (i.e. the estimated
+age from each age-depth model run) as our default.</p>
+<pre class="r"><code>sel_level_predicted &lt;-
+  sel_level %&gt;%
+  dplyr::mutate(
+    age = apply(
+      age_uncertainties, 2,
+      stats::quantile,
+      probs = 0.5
+    )
+  )
+
+head(sel_level_predicted)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="center">sample_id</th>
+<th align="center">depth</th>
+<th align="center">age</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">500543</td>
+<td align="center">703</td>
+<td align="center">3260</td>
+</tr>
+<tr class="even">
+<td align="center">500544</td>
+<td align="center">753</td>
+<td align="center">3396</td>
+</tr>
+<tr class="odd">
+<td align="center">500545</td>
+<td align="center">803</td>
+<td align="center">3523</td>
+</tr>
+<tr class="even">
+<td align="center">500547</td>
+<td align="center">853</td>
+<td align="center">3838</td>
+</tr>
+<tr class="odd">
+<td align="center">500548</td>
+<td align="center">908</td>
+<td align="center">4188</td>
+</tr>
+<tr class="even">
+<td align="center">500549</td>
+<td align="center">953</td>
+<td align="center">4458</td>
+</tr>
+</tbody>
+</table>
+<p>We can visualise the median age by drawing a red line. This age is
+the age that is often reported in publications but in essence it
+represents multiple age-depth model runs with smaller or larger age
+uncertainties throughout the pollen record.</p>
+<pre class="r"><code>fig_age_uncertainties +
+  ggplot2::geom_point(
+    data = sel_level_predicted,
+    color = &quot;red&quot;,
+    size = 3
+  ) +
+  ggplot2::geom_line(
+    data = sel_level_predicted,
+    color = &quot;red&quot;,
+    linewidth = 1
+  )</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/age_uncertainties_vis_median-1.png" /></p>
+</div>
+</div>
+<div id="visualisation-of-our-data" class="section level3">
+<h3>Visualisation of our data</h3>
+<p>Let’s now make a simple pollen diagram with proportions of the main
+pollen taxa (x-axis) against our estimated ages along depth
+(y-axis).</p>
+<pre class="r"><code>sel_counts_selected %&gt;%
+  tibble::column_to_rownames(&quot;sample_id&quot;) %&gt;%
+  RRatepol:::transform_into_proportions() %&gt;%
+  tibble::rownames_to_column(&quot;sample_id&quot;) %&gt;%
+  dplyr::inner_join(
+    sel_level_predicted,
+    by = dplyr::join_by(sample_id)
+  ) %&gt;%
+  tidyr::pivot_longer(
+    cols = -c(sample_id, depth, age),
+    names_to = &quot;taxa&quot;,
+    values_to = &quot;proportion_of_grains&quot;
+  ) %&gt;%
+  dplyr::group_by(taxa) %&gt;%
+  # Calculate the average proportion of grains
+  dplyr::mutate(
+    avg_prop = mean(proportion_of_grains)
+  ) %&gt;%
+  # only keep te main taxa
+  dplyr::filter(avg_prop &gt; 0.01) %&gt;%
+  dplyr::ungroup() %&gt;%
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      y = age,
+      x = proportion_of_grains,
+      xmax = proportion_of_grains,
+      xmin = 0,
+      fill = taxa,
+      col = taxa
+    ),
+  ) +
+  ggplot2::geom_ribbon() +
+  ggplot2::scale_y_continuous(trans = &quot;reverse&quot;) +
+  ggplot2::scale_x_continuous(breaks = c(0, 1)) +
+  ggplot2::facet_wrap(~taxa, nrow = 1) +
+  ggplot2::theme(
+    legend.position = &quot;none&quot;
+  )</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/vis_data_with_ages-1.png" /></p>
+</div>
+</div>
+<div id="estimation-rate-of-change" class="section level2">
+<h2>Estimation Rate-of-Change</h2>
+<p>Now we will use our prepared fossil pollen data and age-depth model
+to estimate the rate of vegetation change. We will present several
+scenarios (i.e. approaches) to calculate RoC. For all scenarios, we will
+be using the <code>chisq</code> dissimilarity coefficient (works best
+for pollen data), and <code>time_standardisation</code> == 500 (this
+means that all ROC values are ‘change per 500 yr’).</p>
+<div id="scenario-1---estimating-roc-for-each-level"
+class="section level3">
+<h3>Scenario 1 - Estimating RoC for each level</h3>
+<p>This is the “Classic” approach that uses each sampled depth in a
+pollen record (i.e. individual level) to estimate RoC.</p>
+<pre class="r"><code>scenario_1 &lt;-
+  RRatepol::estimate_roc(
+    data_source_community = sel_counts_selected,
+    data_source_age = sel_level_predicted,
+    dissimilarity_coefficient = &quot;chisq&quot;,
+    time_standardisation = 500,
+    working_units = &quot;levels&quot; # here is set to use individual levels
+  )</code></pre>
+<pre class="r"><code>RRatepol::plot_roc(data_source = scenario_1)</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/roc_sc1_vis-1.png" /></p>
+</div>
+<div
+id="scenario-2---estimating-roc-for-each-level-with-smoothing-of-data"
+class="section level3">
+<h3>Scenario 2 - Estimating RoC for each level with smoothing of
+data</h3>
+<p>We do the same as in Scenario 1 but now we smooth the pollen data
+before calculating RoC. Specifically, we will add
+<code>smooth_method</code> = “shep” (i.e. Shepard’s 5-term filter).</p>
+<pre class="r"><code>scenario_2 &lt;-
+  RRatepol::estimate_roc(
+    data_source_community = sel_counts_selected,
+    data_source_age = sel_level_predicted,
+    dissimilarity_coefficient = &quot;chisq&quot;,
+    time_standardisation = 500,
+    working_units = &quot;levels&quot;,
+    smooth_method = &quot;shep&quot; # Shepard&#39;s 5-term filter
+  )</code></pre>
+<pre class="r"><code>RRatepol::plot_roc(data_source = scenario_2)</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/roc_sc2_vis-1.png" /></p>
+<p>We see that the pattern changed only slightly but the absolute RoC
+scores changed (x-axis).</p>
+</div>
+<div id="scenario-3---estimating-roc-for-each-level-subsampling-data"
+class="section level3">
+<h3>Scenario 3 - Estimating RoC for each level subsampling data</h3>
+<p>We will now do taxa-standardisation by random sub-sampling each level
+to 150 pollen grains (i.e. for analysis only 150 pollen grains per
+sample will be used). In order to do that we need to increase the number
+of randomisations. This is again a toy example for a quick computation
+and therefore we only do 100 randomisations. We would recommend
+increasing the <em>set_randomisations</em> to 10.000 for any real
+estimation. To speed the process up, you can also set
+<code>use_parallel</code> == <code>TRUE</code>, which will use all cores
+of your computer.</p>
+<pre class="r"><code>set_randomisations &lt;- 100</code></pre>
+<pre class="r"><code>scenario_3 &lt;-
+  RRatepol::estimate_roc(
+    data_source_community = sel_counts_selected,
+    data_source_age = sel_level_predicted,
+    dissimilarity_coefficient = &quot;chisq&quot;,
+    working_units = &quot;levels&quot;,
+    time_standardisation = 500,
+    smooth_method = &quot;shep&quot;,
+    standardise = TRUE, # set the taxa standardisation
+    n_individuals = 150, # set the number of pollen grains
+    rand = set_randomisations, # set number of randomisations
+    use_parallel = TRUE # do use parallel computing
+  )</code></pre>
+<p>We will now also visualize uncertainty around the RoC scores shown by
+a grey shadow.</p>
+<pre class="r"><code>RRatepol::plot_roc(data_source = scenario_3)</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/roc_sc3_vis-1.png" /></p>
+</div>
+<div
+id="scenario-4---estimating-roc-for-each-level-subsampling-data-and-calculating-age-uncertainties"
+class="section level3">
+<h3>Scenario 4 - Estimating RoC for each level subsampling data and
+calculating age uncertainties</h3>
+<p>For RoC analysis, it is important to consider age uncertainties. For
+each iteration, RRatepol will randomly select one age-sequence from the
+uncertainty matrix (see the age-depth modelling section for more
+info).</p>
+<pre class="r"><code>scenario_4 &lt;-
+  RRatepol::estimate_roc(
+    data_source_community = sel_counts_selected,
+    data_source_age = sel_level_predicted,
+    dissimilarity_coefficient = &quot;chisq&quot;,
+    working_units = &quot;levels&quot;,
+    time_standardisation = 500,
+    smooth_method = &quot;shep&quot;,
+    standardise = TRUE,
+    n_individuals = 150,
+    rand = set_randomisations,
+    use_parallel = TRUE,
+    age_uncertainty = age_uncertainties # Add the uncertainty matrix
+  )</code></pre>
+<pre class="r"><code>RRatepol::plot_roc(data_source = scenario_4)</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/roc_sc4_vis-1.png" /></p>
+<p>Here you can see that the uncertainty (grey shadow) around the RoC
+scores (black line) increased drastically. This is because we are
+randomly sampling age and taxa with a small number of
+randomisations.</p>
+</div>
+<div id="scenario-5---estimating-roc-per-bin" class="section level3">
+<h3>Scenario 5 - Estimating RoC per bin</h3>
+<p>In order to get rid of the effect of uneven distribution of sampled
+depths (i.e. levels) in a fossil pollen record, we can bin the data.
+Specifically, we will change the <code>working_units</code> from single
+levels to <code>"bins"</code>. Here we select bins of 500 years each
+instead of the individual levels. Note that one level is randomly
+selected as a representation of that time bin.</p>
+<pre class="r"><code>scenario_5 &lt;-
+  RRatepol::estimate_roc(
+    data_source_community = sel_counts_selected,
+    data_source_age = sel_level_predicted,
+    dissimilarity_coefficient = &quot;chisq&quot;,
+    working_units = &quot;bins&quot;, # change the &quot;bins&quot;
+    bin_size = 500, # sie of a time bin
+    time_standardisation = 500,
+    smooth_method = &quot;shep&quot;,
+    standardise = TRUE,
+    n_individuals = 150,
+    rand = set_randomisations,
+    use_parallel = TRUE,
+    age_uncertainty = age_uncertainties
+  )</code></pre>
+<pre class="r"><code>RRatepol::plot_roc(data_source = scenario_5)</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/roc_sc5_vis-1.png" /></p>
+<p>We see a substantial increase in temporal uncertainty around the RoC
+scores (grey shadow), indicating a loss of temporal precision.</p>
+</div>
+<div
+id="scenario-6-a---estimating-roc-with-the-new-moving-window-approach"
+class="section level3">
+<h3>Scenario 6 A - Estimating RoC with the new “Moving-window”
+approach</h3>
+<p>In order to reduce the temporal uncertainty and improve temporal
+precision, we can apply a novel approach in RRATEPOL called “moving
+window”.</p>
+<pre class="r"><code>scenario_6 &lt;-
+  RRatepol::estimate_roc(
+    data_source_community = sel_counts_selected,
+    data_source_age = sel_level_predicted,
+    dissimilarity_coefficient = &quot;chisq&quot;,
+    working_units = &quot;MW&quot;, # change the &quot;MW&quot; to apply the &quot;moving window&quot;
+    bin_size = 500,
+    number_of_shifts = 5, # number of shifts
+    time_standardisation = 500,
+    smooth_method = &quot;shep&quot;,
+    standardise = TRUE,
+    n_individuals = 150,
+    rand = set_randomisations,
+    use_parallel = TRUE,
+    age_uncertainty = age_uncertainties
+  )</code></pre>
+<pre class="r"><code>RRatepol::plot_roc(data_source = scenario_6)</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/roc_sc6_vis-1.png" /></p>
+</div>
+<div
+id="scenario-6-b---estimating-roc-with-the-new-moving-window-approach-and-detecting-peak-points"
+class="section level3">
+<h3>Scenario 6 B - Estimating RoC with the new “Moving-window” approach
+and detecting peak points</h3>
+<p>Throughout the record, there can be periods when the RoC will
+substantially change. We can detect RoC increases that are significant
+by identifying so called <em>peak-points</em>. Here, we will use
+“Non-linear” method, which will detect significant change from a
+non-linear trend of RoC.</p>
+<pre class="r"><code>scenario_6_peak &lt;-
+  RRatepol::detect_peak_points(
+    data_source = scenario_6,
+    sel_method = &quot;trend_non_linear&quot;
+  )</code></pre>
+<p>Now we will plot the RoC estimates showing the peak-points. So here
+we can see that there were rates of vegetation change throughout the
+record but only at certain moments in time (green dots - peak points)
+these changes were significant. There you go!</p>
+<pre class="r"><code>RRatepol::plot_roc(
+  data_source = scenario_6_peak,
+  peaks = TRUE
+)</code></pre>
+<p><img
+src="step_by_step_guide_files/figure-gfm/peak_points_vis-1.png" /></p>
+</div>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
