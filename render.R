@@ -14,20 +14,28 @@
 
 library(quarto)
 library(rmarkdown)
+library(here)
 
 # helper function o render fie in both formats
-render_md_and_html <- function(file_name, file_name_html = file_name) {
+render_md_and_html <- function(
+    file_name,
+    file_name_html = file_name) {
   quarto::quarto_render(
-    input = paste0(file_name, ".qmd"),
+    input = here::here(
+      paste0(file_name, ".qmd")
+    ),
     output_format = "gfm",
     output_file = paste0(file_name, ".md")
   )
 
   rmarkdown::render(
-    input = paste0(file_name, ".qmd"),
-    output_format = rmarkdown::html_document(
+    input = here::here(
+      paste0(file_name, ".qmd")
     ),
-    output_file = paste0("docs/", file_name_html, ".html")
+    output_format = rmarkdown::html_document(),
+    output_file = here::here(
+      paste0("docs/", file_name_html, ".html")
+    )
   )
 }
 

@@ -28,7 +28,9 @@ package_list <-
     "Bchron", # age-depth modelling
     "janitor", # string cleaning
     "remotes", # installing packages from GitHub
-    "neotoma2" # access to the Neotoma database
+    "neotoma2", # access to the Neotoma database
+    "mgcv", # GAM fitting
+    "gratia" # GAM visualisation
   )
 ```
 

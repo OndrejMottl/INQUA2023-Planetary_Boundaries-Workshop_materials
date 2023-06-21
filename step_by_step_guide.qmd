@@ -14,22 +14,26 @@ knitr::opts_chunk$set(
 )
 ```
 
-This workflow should show the full strength of the [*RRatepol package*](https://hope-uib-bio.github.io/R-Ratepol-package/) and serve as step-by-step guidance starting from downloading dataset from Neotoma, building age-depth models, to estimating rate-of-change using age uncertainty.
+This workflow should serve as step-by-step guidance starting from downloading a dataset from Neotoma and processing it, to estimating ecosystem property (diversity in this case).
 
-:warning: **This workflow is only meant as an example**: There are several additional steps for data preparation which should be done to properly implement RRatepol and asssess rate of change of a fossil pollen dataset from Neotoma!
+:warning: **This workflow is only meant as an example**: There are several additional steps for data preparation which should be done for any fossil pollen dataset from Neotoma!
+
+See [**FOSSILPOL**](https://hope-uib-bio.github.io/FOSSILPOL-website/), an R-based modular workflow to process multiple fossil pollen records to create a comprehensive, standardised dataset compilation, ready for multi-record and multi-proxy analyses at various spatial and temporal scales.
 
 ## Install packages
 
-Please follow the [pre-workshop instructions](https://ondrejmottl.github.io/APD_R-Ratepol_workshop/pre_workshop.html) to make sure all packages are installed.
+Please follow the [pre-workshop instructions](/docs/pre_workshop.html) to make sure all packages are installed.
 
 ## Attach packages
 
 ```{r pkg-attach, results='hide', warning=FALSE, message=FALSE}
 library(tidyverse) # general data wrangling and visualisation
 library(pander) # nice tables
-library(RRatepol) # rate-of-vegetation change ! v1.2.0 !
 library(neotoma2) # obtain data from the Neotoma database
 library(Bchron) # age-depth modeling
+library(REcopol) # estimating diversity
+library(mgcv) # GAM fitting
+library(gratia) # GAM visualisation
 library(janitor) # string cleaning
 ```
 
@@ -94,7 +98,7 @@ head(sel_counts_selected)[, 1:5]
 pander::pandoc.table(head(sel_counts_selected)[, 1:5])
 ```
 
-Here, we strongly advocate that attention should be paid to the selection of the ecological groups as well as the harmonisation of the pollen taxa. However, that is not the subject of this workflow, but any analysis to be published needs careful preparation of the fossil pollen datasets before using R-Ratepol!
+Here, we strongly advocate that attention should be paid to the selection of the ecological groups, the selection of depositional environments, as well as the harmonisation of the pollen taxa. However, that is not the subject of this workflow, but any analysis to be published needs careful preparation of the fossil pollen datasets!
 
 We can now try to visualise the taxa per sample_id
 
@@ -150,27 +154,17 @@ pander::pandoc.table(head(sel_level))
 
 ### Age-depth modelling
 
-We will recalculate the age-depth model 'de novo' using the [*Bchron* package](http://andrewcparnell.github.io/Bchron/).
+We highly recommend recalculating the age-depth model 'de Novo' as different methodologies might have been applied to each record. However, age-depth modelling is a very complicated topic, which we will not dig into today. Just note that many parts of the age-depth modelling need attention (selection of chronology control points, using correct calibration curves, etc.).
 
-#### Prepare chron.control table and run Bchron
+```{r run_bchron, eval=FALSE, echo=FALSE}
+# Here we only present a few of the important steps of preparation of the
+#   chronology control table. There are many more potential issues, but
+#   solving those is not the focus of this workflow.
 
-The chronology control table contains all the dates (mostly radiocarbon) to create the age-depth model.
-
-Here we only present a few of the important steps of preparation of the chronology control table. There are many more potential issues, but solving those is not the focus of this workflow.
-
-```{r chron_prepare, results='hide'}
 # First, get the chronologies and check which we want to use used
 sel_chron_control_table_download <-
   neotoma2::chroncontrols(sel_dataset_download)
 
-print(sel_chron_control_table_download)
-```
-
-```{r chron_prepare_show, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-pander::pandoc.table(head(sel_chron_control_table_download))
-```
-
-```{r chron_control_prepare, results='hide', warning=FALSE}
 # prepare the table
 sel_chron_control_table <-
   sel_chron_control_table_download %>%
@@ -182,7 +176,7 @@ sel_chron_control_table <-
   dplyr::mutate(
     error = round((agelimitolder - agelimityounger) / 2)
   ) %>%
-  # As Bchron cannot accept a error of 0, we need to replace the value with 1
+  # As Bchron cannot accept an error of 0, we need to replace the value with 1
   dplyr::mutate(
     error = replace(error, error == 0, 1),
     error = ifelse(is.na(error), 1, error)
@@ -198,16 +192,6 @@ sel_chron_control_table <-
     chroncontrolage, error, depth, thickness, chroncontroltype, curve
   )
 
-head(sel_chron_control_table)
-```
-
-```{r chron_control_show, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-pander::pandoc.table(head(sel_chron_control_table))
-```
-
-As this is just a toy example, we will use only the iteration multiplier (`i_multiplier`) of `0.1` to reduce the computation time. However, we strongly recommend increasing it to 5 for any normal age-depth model construction.
-
-```{r bchron, results='hide', warning=FALSE, message=FALSE}
 i_multiplier <- 0.1 # increase to 5
 
 # Those are default values suggested by the Bchron package
@@ -221,7 +205,7 @@ n_burn <- n_burn_default * i_multiplier
 n_thin <- max(c(1, n_thin_default * i_multiplier))
 
 # run Bchron
-sel_bchron <-
+ad_model <-
   Bchron::Bchronology(
     ages = sel_chron_control_table$chroncontrolage,
     ageSds = sel_chron_control_table$error,
@@ -232,21 +216,33 @@ sel_bchron <-
     burn = n_burn,
     thin = n_thin
   )
+
+readr::write_rds(
+  ad_model,
+  here::here("R/Data/bchron.rds")
+)
+```
+
+Let's load a model, which we already prepared.
+
+```{r, load_age_depth_model}
+ad_model <-
+  readr::read_rds(
+    here::here("R/Data/bchron.rds")
+  )
 ```
 
 Visually check the age-depth models
 
 ```{r bchron_figure, results='markup', warning=FALSE}
-plot(sel_bchron)
+plot(ad_model)
 ```
 
 #### Predict ages
 
-Let's first extract posterior ages (i.e. possible ages) from the age-depth model.
-
 ```{r age_uncertainties, results='hide', warning=FALSE}
 age_position <-
-  Bchron:::predict.BchronologyRun(object = sel_bchron, newPositions = sel_level$depth)
+  Bchron:::predict.BchronologyRun(object = ad_model, newPositions = sel_level$depth)
 
 age_uncertainties <-
   age_position %>%
@@ -256,100 +252,8 @@ age_uncertainties <-
 
 colnames(age_uncertainties) <- sel_level$sample_id
 
-head(age_uncertainties, n = 8)[, 1:8]
-```
-
-Here we see samples (e.g., 500543,500544, 500547,...) and their possible ages (age-sequence) with each model iteration (posterior). Each age-sequence is similar but there are differences of tens or hundreds of years. We will call this *the uncertainty matrix*.
-
-```{r age_uncertainties_display, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-pander::pandoc.table(head(age_uncertainties, n = 8)[, 1:8])
-```
-
-We can visualise these "possible ages" (age-sequence) of each iteration.
-
-```{r age_uncertainties_vis_data}
-# create a data.frame for plotting
-data_age_uncertainties <-
-  age_uncertainties %>%
-  as.data.frame() %>%
-  tibble::rowid_to_column("ID") %>%
-  tidyr::pivot_longer(
-    cols = -ID,
-    names_to = "sample_id",
-    values_to = "age"
-  ) %>%
-  dplyr::left_join(
-    sel_level,
-    by = dplyr::join_by(sample_id)
-  )
-```
-
-Each line is a single potential age-depth model iteration (age-sequence). Green points represent the radiocarbon dates. Horizontal lines are depths of our samples.
-
-```{r age_uncertainties_vis_lines}
-(
-  fig_age_uncertainties <-
-    data_age_uncertainties %>%
-    ggplot2::ggplot(
-      mapping = ggplot2::aes(
-        x = age,
-        y = depth
-      )
-    ) +
-    ggplot2::geom_line(
-      mapping = ggplot2::aes(
-        group = ID
-      ),
-      alpha = 0.05,
-      linewidth = 0.1
-    ) +
-    ggplot2::geom_hline(
-      yintercept = sel_level$depth,
-      lty = 2,
-      color = "gray50",
-      alpha = 0.5,
-      linewidth = 0.1
-    ) +
-    ggplot2::geom_point(
-      data = sel_chron_control_table,
-      mapping = ggplot2::aes(
-        x = chroncontrolage
-      ),
-      color = "green",
-      shape = 15,
-      size = 3
-    ) +
-    ggplot2::scale_y_continuous(trans = "reverse") +
-    ggplot2::scale_x_continuous(trans = "reverse")
-)
-```
-
-We can visualise all age-depth "possible ages" together as the range of values. Here, each line representing one sampled depth in our record.
-
-```{r age_uncertainties_vis_boxplot}
-data_age_uncertainties %>%
-  ggplot2::ggplot(
-    mapping = ggplot2::aes(
-      x = age,
-      y = depth,
-      group = depth
-    )
-  ) +
-  ggplot2::geom_hline(
-    yintercept = sel_level$depth,
-    lty = 2,
-    color = "gray50",
-    alpha = 0.5,
-    linewidth = 0.1
-  ) +
-  ggplot2::geom_boxplot(
-    outlier.shape = NA
-  )
-```
-
-Let's take the median age of all possible ages (i.e. the estimated age from each age-depth model run) as our default.
-
-```{r age_uncertainties_vis_table, results='hide', warning=FALSE}
+# Let's take the median age of all possible ages (i.e. the estimated age
+#   from each age-depth model run) as our default.
 sel_level_predicted <-
   sel_level %>%
   dplyr::mutate(
@@ -358,28 +262,6 @@ sel_level_predicted <-
       stats::quantile,
       probs = 0.5
     )
-  )
-
-head(sel_level_predicted)
-```
-
-```{r age_uncertainties_vis_table_display, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
-pander::pandoc.table(head(sel_level_predicted))
-```
-
-We can visualise the median age by drawing a red line. This age is the age that is often reported in publications but in essence it represents multiple age-depth model runs with smaller or larger age uncertainties throughout the pollen record.
-
-```{r age_uncertainties_vis_median}
-fig_age_uncertainties +
-  ggplot2::geom_point(
-    data = sel_level_predicted,
-    color = "red",
-    size = 3
-  ) +
-  ggplot2::geom_line(
-    data = sel_level_predicted,
-    color = "red",
-    linewidth = 1
   )
 ```
 
@@ -406,7 +288,7 @@ sel_counts_selected %>%
   dplyr::mutate(
     avg_prop = mean(proportion_of_grains)
   ) %>%
-  # only keep te main taxa
+  # Only keep the main taxa
   dplyr::filter(avg_prop > 0.01) %>%
   dplyr::ungroup() %>%
   ggplot2::ggplot(
@@ -428,180 +310,95 @@ sel_counts_selected %>%
   )
 ```
 
-## Estimation Rate-of-Change
+## Estimation of ecosystem property
 
-Now we will use our prepared fossil pollen data and age-depth model to estimate the rate of vegetation change. We will present several scenarios (i.e. approaches) to calculate RoC. For all scenarios, we will be using the `chisq` dissimilarity coefficient (works best for pollen data), and `time_standardisation` == 500 (this means that all ROC values are 'change per 500 yr').
+Now we will use our prepared fossil pollen data to estimate the diversity.
+Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
 
-### Scenario 1 - Estimating RoC for each level
-
-This is the "Classic" approach that uses each sampled depth in a pollen record (i.e. individual level) to estimate RoC.
-
-```{r roc_sc1, results='hide', warning=FALSE, message=FALSE}
-scenario_1 <-
-  RRatepol::estimate_roc(
-    data_source_community = sel_counts_selected,
-    data_source_age = sel_level_predicted,
-    dissimilarity_coefficient = "chisq",
-    time_standardisation = 500,
-    working_units = "levels" # here is set to use individual levels
-  )
-```
-
-```{r roc_sc1_vis, results='markup', echo=TRUE}
-RRatepol::plot_roc(data_source = scenario_1)
-```
-
-### Scenario 2 - Estimating RoC for each level with smoothing of data
-
-We do the same as in Scenario 1 but now we smooth the pollen data before calculating RoC. Specifically, we will add `smooth_method` = "shep" (i.e. Shepard's 5-term filter).
-
-```{r roc_sc2, results='hide', warning=FALSE, message=FALSE}
-scenario_2 <-
-  RRatepol::estimate_roc(
-    data_source_community = sel_counts_selected,
-    data_source_age = sel_level_predicted,
-    dissimilarity_coefficient = "chisq",
-    time_standardisation = 500,
-    working_units = "levels",
-    smooth_method = "shep" # Shepard's 5-term filter
-  )
-```
-
-```{r roc_sc2_vis, results='markup', echo=TRUE}
-RRatepol::plot_roc(data_source = scenario_2)
-```
-
-We see that the pattern changed only slightly but the absolute RoC scores changed (x-axis).
-
-### Scenario 3 - Estimating RoC for each level subsampling data
-
-We will now do taxa-standardisation by random sub-sampling each level to 150 pollen grains (i.e. for analysis only 150 pollen grains per sample will be used). In order to do that we need to increase the number of randomisations. This is again a toy example for a quick computation and therefore we only do 100 randomisations. We would recommend increasing the *set_randomisations* to 10.000 for any real estimation. To speed the process up, you can also set `use_parallel` == `TRUE`, which will use all cores of your computer.
-
-```{r roc_sc3_rand, results='hide', warning=FALSE, message=FALSE}
-set_randomisations <- 100
-```
-
-```{r roc_sc3, results='hide', warning=FALSE, message=FALSE}
-scenario_3 <-
-  RRatepol::estimate_roc(
-    data_source_community = sel_counts_selected,
-    data_source_age = sel_level_predicted,
-    dissimilarity_coefficient = "chisq",
-    working_units = "levels",
-    time_standardisation = 500,
-    smooth_method = "shep",
-    standardise = TRUE, # set the taxa standardisation
-    n_individuals = 150, # set the number of pollen grains
-    rand = set_randomisations, # set number of randomisations
-    use_parallel = TRUE # do use parallel computing
-  )
-```
-
-We will now also visualize uncertainty around the RoC scores shown by a grey shadow.
-
-```{r roc_sc3_vis, results='markup', echo=TRUE}
-RRatepol::plot_roc(data_source = scenario_3)
-```
-
-### Scenario 4 - Estimating RoC for each level subsampling data and calculating age uncertainties
-
-For RoC analysis, it is important to consider age uncertainties. For each iteration, RRatepol will randomly select one age-sequence from the uncertainty matrix (see the age-depth modelling section for more info).
-
-```{r roc_sc4, results='hide', warning=FALSE, message=FALSE}
-scenario_4 <-
-  RRatepol::estimate_roc(
-    data_source_community = sel_counts_selected,
-    data_source_age = sel_level_predicted,
-    dissimilarity_coefficient = "chisq",
-    working_units = "levels",
-    time_standardisation = 500,
-    smooth_method = "shep",
-    standardise = TRUE,
-    n_individuals = 150,
-    rand = set_randomisations,
-    use_parallel = TRUE,
-    age_uncertainty = age_uncertainties # Add the uncertainty matrix
-  )
-```
-
-```{r roc_sc4_vis, results='markup', echo=TRUE}
-RRatepol::plot_roc(data_source = scenario_4)
-```
-
-Here you can see that the uncertainty (grey shadow) around the RoC scores (black line) increased drastically. This is because we are randomly sampling age and taxa with a small number of randomisations.
-
-### Scenario 5 - Estimating RoC per bin
-
-In order to get rid of the effect of uneven distribution of sampled depths (i.e. levels) in a fossil pollen record, we can bin the data. Specifically, we will change the `working_units` from single levels to `"bins"`. Here we select bins of 500 years each instead of the individual levels. Note that one level is randomly selected as a representation of that time bin.
-
-```{r roc_sc5, results='hide', warning=FALSE, message=FALSE}
-scenario_5 <-
-  RRatepol::estimate_roc(
-    data_source_community = sel_counts_selected,
-    data_source_age = sel_level_predicted,
-    dissimilarity_coefficient = "chisq",
-    working_units = "bins", # change the "bins"
-    bin_size = 500, # sie of a time bin
-    time_standardisation = 500,
-    smooth_method = "shep",
-    standardise = TRUE,
-    n_individuals = 150,
-    rand = set_randomisations,
-    use_parallel = TRUE,
-    age_uncertainty = age_uncertainties
-  )
-```
-
-```{r roc_sc5_vis, results='markup', echo=TRUE}
-RRatepol::plot_roc(data_source = scenario_5)
-```
-
-We see a substantial increase in temporal uncertainty around the RoC scores (grey shadow), indicating a loss of temporal precision.
-
-### Scenario 6 A - Estimating RoC with the new "Moving-window" approach
-
-In order to reduce the temporal uncertainty and improve temporal precision, we can apply a novel approach in RRATEPOL called "moving window".
-
-```{r roc_sc6, results='hide', warning=FALSE, message=FALSE}
-scenario_6 <-
-  RRatepol::estimate_roc(
-    data_source_community = sel_counts_selected,
-    data_source_age = sel_level_predicted,
-    dissimilarity_coefficient = "chisq",
-    working_units = "MW", # change the "MW" to apply the "moving window"
-    bin_size = 500,
-    number_of_shifts = 5, # number of shifts
-    time_standardisation = 500,
-    smooth_method = "shep",
-    standardise = TRUE,
-    n_individuals = 150,
-    rand = set_randomisations,
-    use_parallel = TRUE,
-    age_uncertainty = age_uncertainties
-  )
-```
-
-```{r roc_sc6_vis, results='markup', echo=TRUE}
-RRatepol::plot_roc(data_source = scenario_6)
-```
-
-### Scenario 6 B - Estimating RoC with the new "Moving-window" approach and detecting peak points
-
-Throughout the record, there can be periods when the RoC will substantially change. We can detect RoC increases that are significant by identifying so called *peak-points*. Here, we will use "Non-linear" method, which will detect significant change from a non-linear trend of RoC.
-
-```{r peak_points, results='hide', warning=FALSE}
-scenario_6_peak <-
-  RRatepol::detect_peak_points(
-    data_source = scenario_6,
-    sel_method = "trend_non_linear"
-  )
-```
-
-Now we will plot the RoC estimates showing the peak-points. So here we can see that there were rates of vegetation change throughout the record but only at certain moments in time (green dots - peak points) these changes were significant. There you go!
-
-```{r peak_points_vis, results='markup', echo=TRUE}
-RRatepol::plot_roc(
-  data_source = scenario_6_peak,
-  peaks = TRUE
+```{r diversity}
+data_diversity <-
+REcopol::diversity_estimate(
+  data_source = sel_counts_selected,
+  sel_method = "taxonomic"
 )
+```
+
+Now we can fit a temporal trend as a GAM model.
+
+
+```{r temporal_trend}
+data_to_fit <-
+  dplyr::inner_join(
+    data_diversity,
+    sel_level_predicted,
+    by = "sample_id"
+  )
+
+mod_n0 <-
+  mgcv::gam(
+    n0 ~ s(age, k = 12, bs = "tp"),
+    data = data_to_fit,
+    method = "REML",
+    family = mgcv::tw(link = "log")
+  )
+
+summary(mod_n0)
+
+# mgcv::gam.check(mod_n0)
+```
+
+Now we can visualise the results.
+
+```{r plot_gam}
+age_dummy <-
+  gratia::data_slice(
+    mod_n0,
+    age = gratia::evenly(age)
+  )
+
+data_predicted <-
+  gratia::fitted_samples(
+    model = mod_n0,
+    seed = 1234,
+    data = age_dummy,
+    n = 1000
+  ) %>%
+  dplyr::group_by(row) %>%
+  dplyr::summarise(
+    value = median(fitted),
+    upr = quantile(fitted, 0.975),
+    lwr = quantile(fitted, 0.025)
+  )
+
+dplyr::bind_cols(
+  age_dummy,
+  data_predicted
+) %>%
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = age,
+      y = value
+    )
+  ) +
+  ggplot2::geom_ribbon(
+    mapping = ggplot2::aes(
+      ymin = lwr,
+      ymax = upr
+    ),
+    alpha = 0.2
+  ) +
+  ggplot2::geom_line() +
+  geom_point(
+    data = data_to_fit,
+    mapping = ggplot2::aes(
+      y = n0
+    )
+  ) +
+  ggplot2::scale_x_continuous(
+    trans = "reverse"
+  ) +
+  ggplot2::labs(
+    y = "Hill's N0",
+    x = "Age (cal yr BP)"
+  )
 ```
