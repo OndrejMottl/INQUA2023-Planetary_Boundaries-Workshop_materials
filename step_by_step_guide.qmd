@@ -357,27 +357,16 @@ age_dummy <-
   )
 
 data_predicted <-
-  gratia::fitted_samples(
-    model = mod_n0,
-    seed = 1234,
-    data = age_dummy,
-    n = 1000
-  ) %>%
-  dplyr::group_by(row) %>%
-  dplyr::summarise(
-    value = median(fitted),
-    upr = quantile(fitted, 0.975),
-    lwr = quantile(fitted, 0.025)
+  REcopol::predic_model(
+    model_source = mod_n0,
+    data_source = age_dummy
   )
 
-dplyr::bind_cols(
-  age_dummy,
-  data_predicted
-) %>%
+data_predicted %>%
   ggplot2::ggplot(
     mapping = ggplot2::aes(
       x = age,
-      y = value
+      y = fit
     )
   ) +
   ggplot2::geom_ribbon(
