@@ -274,18 +274,18 @@ summary(mod_n0)
 #> 
 #> Parametric coefficients:
 #>             Estimate Std. Error t value Pr(>|t|)    
-#> (Intercept)  2.94461    0.03139   93.81   <2e-16 ***
+#> (Intercept)  2.94462    0.03139   93.81   <2e-16 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> Approximate significance of smooth terms:
-#>          edf Ref.df     F p-value    
-#> s(age) 4.667  5.762 23.99  <2e-16 ***
+#>         edf Ref.df     F p-value    
+#> s(age) 4.65  5.741 24.05  <2e-16 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> R-sq.(adj) =  0.762   Deviance explained = 77.4%
-#> -REML = 146.81  Scale est. = 0.82852   n = 49
+#> R-sq.(adj) =  0.761   Deviance explained = 77.3%
+#> -REML = 146.83  Scale est. = 0.82853   n = 49
 
 # mgcv::gam.check(mod_n0)
 ```
@@ -300,27 +300,16 @@ age_dummy <-
   )
 
 data_predicted <-
-  gratia::fitted_samples(
-    model = mod_n0,
-    seed = 1234,
-    data = age_dummy,
-    n = 1000
-  ) %>%
-  dplyr::group_by(row) %>%
-  dplyr::summarise(
-    value = median(fitted),
-    upr = quantile(fitted, 0.975),
-    lwr = quantile(fitted, 0.025)
+  REcopol::predic_model(
+    model_source = mod_n0,
+    data_source = age_dummy
   )
 
-dplyr::bind_cols(
-  age_dummy,
-  data_predicted
-) %>%
+data_predicted %>%
   ggplot2::ggplot(
     mapping = ggplot2::aes(
       x = age,
-      y = value
+      y = fit
     )
   ) +
   ggplot2::geom_ribbon(

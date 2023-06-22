@@ -47,6 +47,7 @@ Install packages from GitHub
 ``` r
 # Install R-Ecopol
 remotes::install_github("HOPE-UIB-BIO/R-Ecopol-package")
+# Note that the package can be only installed on Windows machine. 
 ```
 
 ### Test if everything is set-up
