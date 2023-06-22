@@ -312,7 +312,7 @@ sel_counts_selected %>%
 
 ## Estimation of ecosystem property
 
-Now we will use our prepared fossil pollen data to estimate the diversity.
+Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more informations.
 Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
 
 ```{r diversity}

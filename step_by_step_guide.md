@@ -236,7 +236,7 @@ sel_counts_selected %>%
 
 ## Estimation of ecosystem property
 
-Now we will use our prepared fossil pollen data to estimate the diversity. Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
+Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more informations. Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
 
 ``` r
 data_diversity <-
@@ -274,18 +274,18 @@ summary(mod_n0)
 #> 
 #> Parametric coefficients:
 #>             Estimate Std. Error t value Pr(>|t|)    
-#> (Intercept)  2.94462    0.03139   93.81   <2e-16 ***
+#> (Intercept)  2.94459    0.03139   93.81   <2e-16 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> Approximate significance of smooth terms:
-#>         edf Ref.df     F p-value    
-#> s(age) 4.65  5.741 24.05  <2e-16 ***
+#>          edf Ref.df     F p-value    
+#> s(age) 4.661  5.753 24.02  <2e-16 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> R-sq.(adj) =  0.761   Deviance explained = 77.3%
-#> -REML = 146.83  Scale est. = 0.82853   n = 49
+#> R-sq.(adj) =  0.762   Deviance explained = 77.4%
+#> -REML = 146.79  Scale est. = 0.82852   n = 49
 
 # mgcv::gam.check(mod_n0)
 ```
