@@ -1,5 +1,4 @@
-Step-by-step guide
-================
+# Step-by-step guide
 
 This workflow should serve as step-by-step guidance starting from downloading a dataset from Neotoma and processing it, to estimating ecosystem property (diversity in this case).
 
@@ -26,11 +25,13 @@ library(janitor) # string cleaning
 
 ## Download a dataset from Neotoma
 
-Here we have selected the **Ahakagyezi Swamp** record.
+Here we have selected the **Lingua d’Oca** (ID = 52162) record by Feredico Di Rita.
+
+Reference paper: Di Rita, F., A. Celant, and D. Magri. 2010. Holocene environmental instability in the wetland north of the Tiber delta (Rome, Italy): sea-lake-man interactions. *Journal of Paleolimnology* 44:51-67.
 
 ``` r
 sel_dataset_download <-
-  neotoma2::get_downloads(50216)
+  neotoma2::get_downloads(52162)
 ```
 
 ## Prepare the pollen counts
@@ -69,14 +70,14 @@ sel_counts_selected <-
 head(sel_counts_selected)[, 1:5]
 ```
 
-| sample_id | rhamnaceae | combretaceae_melastomataceae | ranunculaceae | prunus |
-|:---------:|:----------:|:----------------------------:|:-------------:|:------:|
-|  500543   |     1      |              1               |       1       |   1    |
-|  500544   |     4      |              0               |       0       |   2    |
-|  500545   |     6      |              1               |       0       |   0    |
-|  500547   |     4      |              0               |       0       |   0    |
-|  500548   |     7      |              0               |       0       |   0    |
-|  500549   |     3      |              1               |       0       |   1    |
+| sample_id | fagus | picea | rumex | salix |
+|:---------:|:-----:|:-----:|:-----:|:-----:|
+|  510392   |   1   |   1   |   1   |   1   |
+|  510393   |   3   |   0   |   0   |   0   |
+|  510394   |   6   |   0   |   1   |   0   |
+|  510396   |   5   |   0   |   0   |   0   |
+|  510391   |   8   |   0   |   0   |   0   |
+|  510395   |   6   |   0   |   0   |   0   |
 
 Here, we strongly advocate that attention should be paid to the selection of the ecological groups, the selection of depositional environments, as well as the harmonisation of the pollen taxa. However, that is not the subject of this workflow, but any analysis to be published needs careful preparation of the fossil pollen datasets!
 
@@ -111,7 +112,7 @@ sel_counts_selected %>%
   )
 ```
 
-![](step_by_step_guide_files/figure-gfm/count_vis-1.png)
+![](step_by_step_guide_files/figure-commonmark/count_vis-1.png)
 
 ## Preparation of the levels
 
@@ -132,12 +133,12 @@ head(sel_level)
 
 | sample_id | depth |
 |:---------:|:-----:|
-|  500543   |  703  |
-|  500544   |  753  |
-|  500545   |  803  |
-|  500547   |  853  |
-|  500548   |  908  |
-|  500549   |  953  |
+|  510392   |   5   |
+|  510393   |  10   |
+|  510394   |  15   |
+|  510396   |  20   |
+|  510391   |  25   |
+|  510395   |  30   |
 
 ### Age-depth modelling
 
@@ -158,7 +159,7 @@ Visually check the age-depth models
 plot(ad_model)
 ```
 
-![](step_by_step_guide_files/figure-gfm/bchron_figure-1.png)
+![](step_by_step_guide_files/figure-commonmark/bchron_figure-1.png)
 
 #### Predict ages
 
@@ -193,9 +194,7 @@ Let’s now make a simple pollen diagram with proportions of the main pollen tax
 
 ``` r
 sel_counts_selected %>%
-  tibble::column_to_rownames("sample_id") %>%
-  RRatepol:::transform_into_proportions() %>%
-  tibble::rownames_to_column("sample_id") %>%
+  REcopol:::transfer_into_proportions() %>%
   dplyr::inner_join(
     sel_level_predicted,
     by = dplyr::join_by(sample_id)
@@ -210,8 +209,8 @@ sel_counts_selected %>%
   dplyr::mutate(
     avg_prop = mean(proportion_of_grains)
   ) %>%
-  # Only keep the main taxa
-  dplyr::filter(avg_prop > 0.01) %>%
+  # Only keep the main taxa (on average >= 1% pollen grains)
+  dplyr::filter(avg_prop >= 1) %>%
   dplyr::ungroup() %>%
   ggplot2::ggplot(
     mapping = ggplot2::aes(
@@ -228,23 +227,54 @@ sel_counts_selected %>%
   ggplot2::scale_x_continuous(breaks = c(0, 1)) +
   ggplot2::facet_wrap(~taxa, nrow = 1) +
   ggplot2::theme(
-    legend.position = "none"
+    legend.position = "none",
+    panel.border = ggplot2::element_blank(),
+    strip.background = ggplot2::element_blank(),
+    strip.text = ggplot2::element_blank(),
+    axis.ticks.x = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_blank()
+  ) +
+  ggplot2::labs(
+    x = "Proportion of grains",
+    y = "Age (cal yr BP)"
   )
 ```
 
-![](step_by_step_guide_files/figure-gfm/vis_data_with_ages-1.png)
+![](step_by_step_guide_files/figure-commonmark/vis_data_with_ages-1.png)
 
 ## Estimation of ecosystem property
 
-Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more informations. Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
+Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more information. Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
 
 ``` r
 data_diversity <-
-REcopol::diversity_estimate(
-  data_source = sel_counts_selected,
-  sel_method = "taxonomic"
+  REcopol::diversity_estimate(
+    data_source = sel_counts_selected,
+    sel_method = "taxonomic"
 )
+
+head(data_diversity)
 ```
+
+| sample_id |  n0   |  n1   |  n2   | n1_minus_n2 | n2_divided_by_n1 |
+|:---------:|:-----:|:-----:|:-----:|:-----------:|:----------------:|
+|  510392   | 25.17 | 12.76 | 8.095 |    4.664    |      0.6344      |
+|  510393   | 24.39 | 11.66 | 6.795 |    4.867    |      0.5826      |
+|  510394   | 24.33 | 11.13 | 6.707 |    4.426    |      0.6024      |
+|  510396   | 20.29 | 7.68  | 3.952 |    3.728    |      0.5146      |
+|  510391   | 26.27 | 13.12 | 7.43  |    5.694    |      0.5661      |
+|  510395   | 22.78 | 11.89 | 7.615 |    4.279    |      0.6402      |
+
+Table continues below
+
+| n1_divided_by_n0 |
+|:----------------:|
+|      0.5068      |
+|      0.4782      |
+|      0.4576      |
+|      0.3784      |
+|      0.4995      |
+|      0.522       |
 
 Now we can fit a temporal trend as a GAM model.
 
@@ -258,7 +288,7 @@ data_to_fit <-
 
 mod_n0 <-
   mgcv::gam(
-    n0 ~ s(age, k = 12, bs = "tp"),
+    n0 ~ s(age, k = 25, bs = "tp"),
     data = data_to_fit,
     method = "REML",
     family = mgcv::tw(link = "log")
@@ -270,24 +300,24 @@ summary(mod_n0)
 #> Link function: log 
 #> 
 #> Formula:
-#> n0 ~ s(age, k = 12, bs = "tp")
+#> n0 ~ s(age, k = 25, bs = "tp")
 #> 
 #> Parametric coefficients:
 #>             Estimate Std. Error t value Pr(>|t|)    
-#> (Intercept)  2.94459    0.03139   93.81   <2e-16 ***
+#> (Intercept)   2.9715     0.0221   134.5   <2e-16 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> Approximate significance of smooth terms:
 #>          edf Ref.df     F p-value    
-#> s(age) 4.661  5.753 24.02  <2e-16 ***
+#> s(age) 4.629   5.78 14.31  <2e-16 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> R-sq.(adj) =  0.762   Deviance explained = 77.4%
-#> -REML = 146.79  Scale est. = 0.82852   n = 49
+#> R-sq.(adj) =  0.593   Deviance explained = 59.7%
+#> -REML = 178.36  Scale est. = 0.58253   n = 64
 
-# mgcv::gam.check(mod_n0)
+# mgcv::gam.check(mod_n0, k.sample = 10e3, k.rep = 1e3)
 ```
 
 Now we can visualise the results.
@@ -335,4 +365,4 @@ data_predicted %>%
   )
 ```
 
-![](step_by_step_guide_files/figure-gfm/plot_gam-1.png)
+![](step_by_step_guide_files/figure-commonmark/plot_gam-1.png)
