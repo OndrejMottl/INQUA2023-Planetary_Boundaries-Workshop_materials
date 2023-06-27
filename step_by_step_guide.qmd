@@ -51,11 +51,14 @@ ggplot2::theme_set(
 
 ## Download a dataset from Neotoma
 
-Here we have selected the **Ahakagyezi Swamp** record.
+Here we have selected the **Lingua d'Oca** (ID = 52162) record by Feredico Di Rita.
+
+Reference paper:
+Di Rita, F., A. Celant, and D. Magri. 2010. Holocene environmental instability in the wetland north of the Tiber delta (Rome, Italy): sea-lake-man interactions. *Journal of Paleolimnology* 44:51-67. 
 
 ```{r download_of_data, results='hide', warning=FALSE, message=FALSE}
 sel_dataset_download <-
-  neotoma2::get_downloads(50216)
+  neotoma2::get_downloads(52162)
 ```
 
 ## Prepare the pollen counts
@@ -169,7 +172,7 @@ sel_chron_control_table_download <-
 sel_chron_control_table <-
   sel_chron_control_table_download %>%
   # Here select the ID of one of the chronology
-  dplyr::filter(chronologyid == 35430) %>%
+  dplyr::filter(chronologyid == 37228) %>%
   tibble::as_tibble() %>%
   # Here we calculate the error as the average of the age `limitolder` and
   #   `agelimityounger`
@@ -180,6 +183,10 @@ sel_chron_control_table <-
   dplyr::mutate(
     error = replace(error, error == 0, 1),
     error = ifelse(is.na(error), 1, error)
+  ) %>%
+    # As Bchron cannot accept an thickness of 0, we need to replace the value with 1
+  dplyr::mutate(
+    thickness = ifelse(is.na(thickness), 1, thickness)
   ) %>%
   # We need to specify which calibration curve should be used for what point
   dplyr::mutate(
@@ -271,9 +278,7 @@ Let's now make a simple pollen diagram with proportions of the main pollen taxa 
 
 ```{r vis_data_with_ages}
 sel_counts_selected %>%
-  tibble::column_to_rownames("sample_id") %>%
-  RRatepol:::transform_into_proportions() %>%
-  tibble::rownames_to_column("sample_id") %>%
+  REcopol:::transfer_into_proportions() %>%
   dplyr::inner_join(
     sel_level_predicted,
     by = dplyr::join_by(sample_id)
@@ -288,8 +293,8 @@ sel_counts_selected %>%
   dplyr::mutate(
     avg_prop = mean(proportion_of_grains)
   ) %>%
-  # Only keep the main taxa
-  dplyr::filter(avg_prop > 0.01) %>%
+  # Only keep the main taxa (on average >= 1% pollen grains)
+  dplyr::filter(avg_prop >= 1) %>%
   dplyr::ungroup() %>%
   ggplot2::ggplot(
     mapping = ggplot2::aes(
@@ -306,25 +311,39 @@ sel_counts_selected %>%
   ggplot2::scale_x_continuous(breaks = c(0, 1)) +
   ggplot2::facet_wrap(~taxa, nrow = 1) +
   ggplot2::theme(
-    legend.position = "none"
+    legend.position = "none",
+    panel.border = ggplot2::element_blank(),
+    strip.background = ggplot2::element_blank(),
+    strip.text = ggplot2::element_blank(),
+    axis.ticks.x = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_blank()
+  ) +
+  ggplot2::labs(
+    x = "Proportion of grains",
+    y = "Age (cal yr BP)"
   )
 ```
 
 ## Estimation of ecosystem property
 
-Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more informations.
+Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more information.
 Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
 
-```{r diversity}
+```{r diversity, results='hide', warning=FALSE}
 data_diversity <-
-REcopol::diversity_estimate(
-  data_source = sel_counts_selected,
-  sel_method = "taxonomic"
+  REcopol::diversity_estimate(
+    data_source = sel_counts_selected,
+    sel_method = "taxonomic"
 )
+
+head(data_diversity)
+```
+
+```{r diversity_diplay, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+pander::pandoc.table(head(data_diversity))
 ```
 
 Now we can fit a temporal trend as a GAM model.
-
 
 ```{r temporal_trend}
 data_to_fit <-
@@ -336,7 +355,7 @@ data_to_fit <-
 
 mod_n0 <-
   mgcv::gam(
-    n0 ~ s(age, k = 12, bs = "tp"),
+    n0 ~ s(age, k = 25, bs = "tp"),
     data = data_to_fit,
     method = "REML",
     family = mgcv::tw(link = "log")
@@ -344,7 +363,7 @@ mod_n0 <-
 
 summary(mod_n0)
 
-# mgcv::gam.check(mod_n0)
+# mgcv::gam.check(mod_n0, k.sample = 10e3, k.rep = 1e3)
 ```
 
 Now we can visualise the results.
