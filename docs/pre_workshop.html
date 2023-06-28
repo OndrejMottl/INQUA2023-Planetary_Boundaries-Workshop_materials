@@ -207,6 +207,96 @@ window.buildTabsets = function(tocID) {
 };
 
 </script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan, pre.julia, pre.foldable');
+  rCodeBlocks.each(function() {
+    // skip if the block has fold-none class
+    if ($(this).hasClass('fold-none')) return;
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    var showThis = (show || $(this).hasClass('fold-show')) && !$(this).hasClass('fold-hide');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (showThis ? 'Hide' : 'Show') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm code-folding-btn pull-right float-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-bs-toggle', 'collapse') // BS5
+        .attr('data-target', '#' + id)
+        .attr('data-bs-target', '#' + id)   // BS5
+        .attr('aria-expanded', showThis)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // show the div if necessary
+    if (showThis) div.collapse('show');
+
+    // update state of button on show/hide
+    //   * Change text
+    //   * add a class for intermediate states styling
+    div.on('hide.bs.collapse', function () {
+      showCodeText.text('Show');
+      showCodeButton.addClass('btn-collapsing');
+    });
+    div.on('hidden.bs.collapse', function () {
+      showCodeButton.removeClass('btn-collapsing');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+      showCodeButton.addClass('btn-expanding');
+    });
+    div.on('shown.bs.collapse', function () {
+      showCodeButton.removeClass('btn-expanding');
+    });
+
+  });
+
+}
+</script>
+<script>
+window.initializeSourceEmbed = function(filename) {
+  $("#rmd-download-source").click(function() {
+    var src = $("#rmd-source-code").html();
+    var a = document.createElement('a');
+    a.href = "data:text/x-r-markdown;base64," + src;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+};
+</script>
 <style type="text/css">.hljs-literal {
 color: #990073;
 }
@@ -250,6 +340,11 @@ if (window.hljs) {
 
 
 
+<style type="text/css">
+#rmd-source-code {
+display: none;
+}
+</style>
 
 
 
@@ -404,6 +499,9 @@ display: none;
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
 
 
@@ -449,6 +547,13 @@ display: none;
 
 <div id="header">
 
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Pre-workshop</h1>
@@ -456,60 +561,83 @@ display: none;
 </div>
 
 
-<p>Pre-workshop instructions for participants.</p>
+<p>Pre-workshop instructions for participants. Let’s get ready to rock!
+🚀</p>
 <div id="r-and-rstudio" class="section level2">
-<h2>R and RStudio</h2>
-<p><a href="https://en.wikipedia.org/wiki/R_(programming_language)">R</a> is
-software for statistical analyses. <a href="https://posit.co/products/open-source/rstudio/">R-studio</a> is
-software to help a user use the <code>R</code> (i.e. integrated
-development environment; IDE).</p>
-<p>There are many guides on how to obtain and/or update R and RStudio,
-for example:</p>
+<h2>R and RStudio 💻</h2>
+<p><a href="https://en.wikipedia.org/wiki/R_(programming_language)">R</a> is a
+fantastic software for statistical analyses. 📊 <a href="https://posit.co/products/open-source/rstudio/">RStudio</a> is
+your trusty sidekick, helping you navigate the R universe with ease.
+It’s like a cozy integrated development environment (IDE) for R. 🌟</p>
+<p>There are plenty of guides available to help you obtain or update R
+and RStudio. Here are a couple of them to get you started:</p>
 <ul>
 <li><a href="https://ckiahtipes.github.io/">R Basics for
 Paleoecologists</a> by C.A. Kiahtipes, a previous part of the APD series
 of workshops.</li>
 <li><a href="https://jennhuck.github.io/workshops/install_update_R.html">Install
-or Update R tutorial</a> by Jennifer Huck</li>
+or Update R tutorial</a> by Jennifer Huck.</li>
 </ul>
 </div>
 <div id="packages" class="section level2">
-<h2>Packages</h2>
-<p>Packages are tools that contain a series of functions for a specific
-need. We need to make sure that all packages used throughout the
-workshop are installed on everyone’s computer.</p>
+<h2>Packages 📦</h2>
+<p>Packages are like magic toolboxes 🧰 that contain a collection of
+functions for specific needs. We want to make sure that everyone has the
+necessary packages installed for this workshop.</p>
 <div id="install-packages" class="section level3">
 <h3>Install packages</h3>
-<p>Make a list of packages needed from CRAN</p>
+<p>Let’s create a list of packages that we’ll need from CRAN. Here they
+are:</p>
 <pre class="r"><code>package_list &lt;-
   c(
-    &quot;tidyverse&quot;, # general data wrangling and visualisation
-    &quot;pander&quot;, # nice tables
-    &quot;Bchron&quot;, # age-depth modelling
-    &quot;janitor&quot;, # string cleaning
-    &quot;remotes&quot;, # installing packages from GitHub
-    &quot;neotoma2&quot;, # access to the Neotoma database
-    &quot;mgcv&quot;, # GAM fitting
-    &quot;gratia&quot; # GAM visualisation
+    &quot;tidyverse&quot;, # general data wrangling and visualisation ✨
+    &quot;pander&quot;, # nice tables 😍
+    &quot;Bchron&quot;, # age-depth modelling 🕰️
+    &quot;janitor&quot;, # string cleaning 🧹
+    &quot;remotes&quot;, # installing packages from GitHub 🚀
+    &quot;neotoma2&quot;, # access to the Neotoma database 🌿
+    &quot;mgcv&quot;, # GAM fitting 📈
+    &quot;marginaleffects&quot; # predicting trends 📈
   )</code></pre>
-<p>Install all packages from CRAN</p>
+<p>Now, let’s install all these amazing packages from CRAN:</p>
 <pre class="r"><code>lapply(
   package_list, utils::install.packages
 )</code></pre>
-<p>Install packages from GitHub</p>
+<div id="install-the-recopol-package" class="section level4">
+<h4>Install the REcopol package 🌼</h4>
+<p>The {REcopol} package provides easy-to-use functions for analyzing
+fossil pollen data. Take a peek at its <a href="https://hope-uib-bio.github.io/R-Ecopol-package/">website</a> for
+more information.</p>
+<p>⚠️ However, please note that there’s a small chance it won’t work on
+the newest version of R or on operating systems other than Windows.
+⚠️</p>
+<p>Let’s try installing the package from GitHub:</p>
 <pre class="r"><code># Install R-Ecopol
-remotes::install_github(&quot;HOPE-UIB-BIO/R-Ecopol-package&quot;)
-# Note that the package can be only installed on Windows machine. </code></pre>
+remotes::install_github(&quot;HOPE-UIB-BIO/R-Ecopol-package&quot;)</code></pre>
+<p>In case the installation doesn’t go as planned, don’t worry! I’ve got
+a nifty workaround prepared for you. You can use it during the workshop.
+Just check if you really need it (by running the following code) and let
+me know during the workshop. 😉</p>
+<pre class="r"><code>if (
+  &quot;REcopol&quot; %in% utils::installed.packages()
+) {
+  cat(&quot;REcopol package is already installed&quot;)
+} else {
+  warning(&quot;You need to use workabout during the workshop&quot;)
+}
+#&gt; REcopol package is already installed</code></pre>
+</div>
 </div>
 <div id="test-if-everything-is-set-up" class="section level3">
-<h3>Test if everything is set-up</h3>
-<p>The following code should produce
-<code>&quot;Everything is good to go&quot;</code>, not error
-(<code>&quot;All required packages are not installed&quot;</code>).</p>
+<h3>Test if everything is set up ✅</h3>
+<p>Let’s do a quick test to make sure everything is in order. Running
+the following code should produce
+<code>&quot;Everything is good to go&quot;</code> instead of an error message
+saying <code>&quot;All required packages are not installed&quot;</code>.</p>
 <pre class="r"><code>if (
   isTRUE(
     all(
-      c(package_list, &quot;REcopol&quot;) %in%
+      c(package_list) %in%
         as.data.frame(
           utils::installed.packages()
         )[, 1]
@@ -523,6 +651,7 @@ remotes::install_github(&quot;HOPE-UIB-BIO/R-Ecopol-package&quot;)
 </div>
 </div>
 
+<div id="rmd-source-code">LS0tDQp0aXRsZTogUHJlLXdvcmtzaG9wDQpmb3JtYXQ6IA0KICBnZm06DQogICAgZmlnLXdpZHRoOiA3DQogICAgZmlnLWhlaWdodDogNg0KICAgIHdyYXA6IG5vbmUNCg0KLS0tDQoNClByZS13b3Jrc2hvcCBpbnN0cnVjdGlvbnMgZm9yIHBhcnRpY2lwYW50cy4gTGV0J3MgZ2V0IHJlYWR5IHRvIHJvY2shIPCfmoANCg0KIyMgUiBhbmQgUlN0dWRpbyDwn5K7DQoNCltSXShodHRwczovL2VuLndpa2lwZWRpYS5vcmcvd2lraS9SXyhwcm9ncmFtbWluZ19sYW5ndWFnZSkpIGlzIGEgZmFudGFzdGljIHNvZnR3YXJlIGZvciBzdGF0aXN0aWNhbCBhbmFseXNlcy4g8J+TiiBbUlN0dWRpb10oaHR0cHM6Ly9wb3NpdC5jby9wcm9kdWN0cy9vcGVuLXNvdXJjZS9yc3R1ZGlvLykgaXMgeW91ciB0cnVzdHkgc2lkZWtpY2ssIGhlbHBpbmcgeW91IG5hdmlnYXRlIHRoZSBSIHVuaXZlcnNlIHdpdGggZWFzZS4gSXQncyBsaWtlIGEgY296eSBpbnRlZ3JhdGVkIGRldmVsb3BtZW50IGVudmlyb25tZW50IChJREUpIGZvciBSLiDwn4yfDQoNClRoZXJlIGFyZSBwbGVudHkgb2YgZ3VpZGVzIGF2YWlsYWJsZSB0byBoZWxwIHlvdSBvYnRhaW4gb3IgdXBkYXRlIFIgYW5kIFJTdHVkaW8uIEhlcmUgYXJlIGEgY291cGxlIG9mIHRoZW0gdG8gZ2V0IHlvdSBzdGFydGVkOg0KDQotIFtSIEJhc2ljcyBmb3IgUGFsZW9lY29sb2dpc3RzXShodHRwczovL2NraWFodGlwZXMuZ2l0aHViLmlvLykgYnkgQy5BLiBLaWFodGlwZXMsIGEgcHJldmlvdXMgcGFydCBvZiB0aGUgQVBEIHNlcmllcyBvZiB3b3Jrc2hvcHMuIA0KLSBbSW5zdGFsbCBvciBVcGRhdGUgUiB0dXRvcmlhbF0oaHR0cHM6Ly9qZW5uaHVjay5naXRodWIuaW8vd29ya3Nob3BzL2luc3RhbGxfdXBkYXRlX1IuaHRtbCkgYnkgSmVubmlmZXIgSHVjay4gDQoNCmBgYHtyIGNodW5rLXNldHVwLCBpbmNsdWRlPUZBTFNFfQ0Ka25pdHI6Om9wdHNfY2h1bmskc2V0KA0KICBjb2xsYXBzZSA9IFRSVUUsDQogIGNvbW1lbnQgPSAiIz4iDQopDQpgYGANCg0KIyMgUGFja2FnZXMg8J+Tpg0KDQpQYWNrYWdlcyBhcmUgbGlrZSBtYWdpYyB0b29sYm94ZXMg8J+nsCB0aGF0IGNvbnRhaW4gYSBjb2xsZWN0aW9uIG9mIGZ1bmN0aW9ucyBmb3Igc3BlY2lmaWMgbmVlZHMuIFdlIHdhbnQgdG8gbWFrZSBzdXJlIHRoYXQgZXZlcnlvbmUgaGFzIHRoZSBuZWNlc3NhcnkgcGFja2FnZXMgaW5zdGFsbGVkIGZvciB0aGlzIHdvcmtzaG9wLg0KDQojIyMgSW5zdGFsbCBwYWNrYWdlcyANCg0KTGV0J3MgY3JlYXRlIGEgbGlzdCBvZiBwYWNrYWdlcyB0aGF0IHdlJ2xsIG5lZWQgZnJvbSBDUkFOLiBIZXJlIHRoZXkgYXJlOg0KDQpgYGB7ciBwa2ctbGlzdCwgcmVzdWx0cz0naGlkZScsIHdhcm5pbmc9RkFMU0UsIG1lc3NhZ2U9RkFMU0V9DQpwYWNrYWdlX2xpc3QgPC0NCiAgYygNCiAgICAidGlkeXZlcnNlIiwgIyBnZW5lcmFsIGRhdGEgd3JhbmdsaW5nIGFuZCB2aXN1YWxpc2F0aW9uIOKcqA0KICAgICJwYW5kZXIiLCAjIG5pY2UgdGFibGVzIPCfmI0NCiAgICAiQmNocm9uIiwgIyBhZ2UtZGVwdGggbW9kZWxsaW5nIPCflbDvuI8NCiAgICAiamFuaXRvciIsICMgc3RyaW5nIGNsZWFuaW5nIPCfp7kNCiAgICAicmVtb3RlcyIsICMgaW5zdGFsbGluZyBwYWNrYWdlcyBmcm9tIEdpdEh1YiDwn5qADQogICAgIm5lb3RvbWEyIiwgIyBhY2Nlc3MgdG8gdGhlIE5lb3RvbWEgZGF0YWJhc2Ug8J+Mvw0KICAgICJtZ2N2IiwgIyBHQU0gZml0dGluZyDwn5OIDQogICAgIm1hcmdpbmFsZWZmZWN0cyIgIyBwcmVkaWN0aW5nIHRyZW5kcyDwn5OIDQogICkNCmBgYA0KDQpOb3csIGxldCdzIGluc3RhbGwgYWxsIHRoZXNlIGFtYXppbmcgcGFja2FnZXMgZnJvbSBDUkFOOg0KDQpgYGB7ciBwa2ctaW5zdGFsbCwgZXZhbCA9IEZBTFNFfQ0KbGFwcGx5KA0KICBwYWNrYWdlX2xpc3QsIHV0aWxzOjppbnN0YWxsLnBhY2thZ2VzDQopDQpgYGANCg0KIyMjIyBJbnN0YWxsIHRoZSBSRWNvcG9sIHBhY2thZ2Ug8J+MvA0KDQpUaGUge1JFY29wb2x9IHBhY2thZ2UgcHJvdmlkZXMgZWFzeS10by11c2UgZnVuY3Rpb25zIGZvciBhbmFseXppbmcgZm9zc2lsIHBvbGxlbiBkYXRhLiBUYWtlIGEgcGVlayBhdCBpdHMgW3dlYnNpdGVdKGh0dHBzOi8vaG9wZS11aWItYmlvLmdpdGh1Yi5pby9SLUVjb3BvbC1wYWNrYWdlLykgZm9yIG1vcmUgaW5mb3JtYXRpb24uDQoNCuKaoO+4jyBIb3dldmVyLCBwbGVhc2Ugbm90ZSB0aGF0IHRoZXJlJ3MgYSBzbWFsbCBjaGFuY2UgaXQgd29uJ3Qgd29yayBvbiB0aGUgbmV3ZXN0IHZlcnNpb24gb2YgUiBvciBvbiBvcGVyYXRpbmcgc3lzdGVtcyBvdGhlciB0aGFuIFdpbmRvd3MuIOKaoO+4jw0KDQpMZXQncyB0cnkgaW5zdGFsbGluZyB0aGUgcGFja2FnZSBmcm9tIEdpdEh1YjoNCg0KYGBge3IgcGtnLWluc3RhbGwtZ2gsIGV2YWwgPSBGQUxTRX0NCiMgSW5zdGFsbCBSLUVjb3BvbA0KcmVtb3Rlczo6aW5zdGFsbF9naXRodWIoIkhPUEUtVUlCLUJJTy9SLUVjb3BvbC1wYWNrYWdlIikNCmBgYA0KDQpJbiBjYXNlIHRoZSBpbnN0YWxsYXRpb24gZG9lc24ndCBnbyBhcyBwbGFubmVkLCBkb24ndCB3b3JyeSEgSSd2ZSBnb3QgYSBuaWZ0eSB3b3JrYXJvdW5kIHByZXBhcmVkIGZvciB5b3UuIFlvdSBjYW4gdXNlIGl0IGR1cmluZyB0aGUgd29ya3Nob3AuIEp1c3QgY2hlY2sgaWYgeW91IHJlYWxseSBuZWVkIGl0IChieSBydW5uaW5nIHRoZSBmb2xsb3dpbmcgY29kZSkgYW5kIGxldCBtZSBrbm93IGR1cmluZyB0aGUgd29ya3Nob3AuIPCfmIkNCg0KYGBge3IgbmVlZC13b3JrYXJvdW5kfQ0KaWYgKA0KICAiUkVjb3BvbCIgJWluJSB1dGlsczo6aW5zdGFsbGVkLnBhY2thZ2VzKCkNCikgew0KICBjYXQoIlJFY29wb2wgcGFja2FnZSBpcyBhbHJlYWR5IGluc3RhbGxlZCIpDQp9IGVsc2Ugew0KICB3YXJuaW5nKCJZb3UgbmVlZCB0byB1c2Ugd29ya2Fib3V0IGR1cmluZyB0aGUgd29ya3Nob3AiKQ0KfQ0KYGBgDQoNCg0KIyMjIFRlc3QgaWYgZXZlcnl0aGluZyBpcyBzZXQgdXAg4pyFDQoNCkxldCdzIGRvIGEgcXVpY2sgdGVzdCB0byBtYWtlIHN1cmUgZXZlcnl0aGluZyBpcyBpbiBvcmRlci4gUnVubmluZyB0aGUgZm9sbG93aW5nIGNvZGUgc2hvdWxkIHByb2R1Y2UgYCJFdmVyeXRoaW5nIGlzIGdvb2QgdG8gZ28iYCBpbnN0ZWFkIG9mIGFuIGVycm9yIG1lc3NhZ2Ugc2F5aW5nIGAiQWxsIHJlcXVpcmVkIHBhY2thZ2VzIGFyZSBub3QgaW5zdGFsbGVkImAuDQoNCmBgYHtyIHBrZy10ZXN0LCBldmFsID0gRkFMU0V9DQppZiAoDQogIGlzVFJVRSgNCiAgICBhbGwoDQogICAgICBjKHBhY2thZ2VfbGlzdCkgJWluJQ0KICAgICAgICBhcy5kYXRhLmZyYW1lKA0KICAgICAgICAgIHV0aWxzOjppbnN0YWxsZWQucGFja2FnZXMoKQ0KICAgICAgICApWywgMV0NCiAgICApDQogICkNCikgew0KICBjYXQoIkV2ZXJ5dGhpbmcgaXMgZ29vZCB0byBnbyIpDQp9IGVsc2Ugew0KICB3YXJuaW5nKCJBbGwgcmVxdWlyZWQgcGFja2FnZXMgYXJlIG5vdCBpbnN0YWxsZWQiKQ0KfQ0KYGBg</div>
 
 
 
@@ -556,6 +685,11 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("pre_workshop.qmd");
+});
+</script>
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
