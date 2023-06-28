@@ -34,6 +34,7 @@ library(Bchron) # age-depth modelling 🕰️
 library(mgcv) # GAM fitting 📈
 library(marginaleffects) # predicting trends 📈
 library(janitor) # string cleaning 🧹
+library(here) # for working directory 🗺️
 ```
 
 ```{r theme-setup, include=FALSE}
@@ -328,9 +329,27 @@ sel_counts_selected %>%
 Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more information.
 Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
 
+```{r workaround, results='hide', warning=FALSE}
+if (
+  "REcopol" %in% utils::installed.packages()
+) {
+  library(REcopol)
+
+  get_diversity <-
+    REcopol::diversity_estimate
+} else {
+  source(
+    here::here(
+      "R/get_diversity.R"
+    )
+  )
+}
+
+```
+
 ```{r diversity, results='hide', warning=FALSE}
 data_diversity <-
-  REcopol::diversity_estimate(
+  get_diversity(
     data_source = sel_counts_selected,
     sel_method = "taxonomic"
   )
@@ -382,7 +401,7 @@ data_predicted <-
     model = mod_n0,
     newdata = age_dummy
   ) %>%
-  tibble::as_tibble()  %>% 
+  tibble::as_tibble() %>%
   dplyr::rename(
     fit = estimate,
     lwr = conf.low,
@@ -399,7 +418,7 @@ data_predicted <-
         "upr"
       )
     )
-  ) 
+  )
 
 data_predicted %>%
   ggplot2::ggplot(
