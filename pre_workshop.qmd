@@ -44,7 +44,8 @@ package_list <-
     "remotes", # installing packages from GitHub 🚀
     "neotoma2", # access to the Neotoma database 🌿
     "mgcv", # GAM fitting 📈
-    "marginaleffects" # predicting trends 📈
+    "marginaleffects", # predicting trends 📈
+    "here" # for working directory 🗺️
   )
 ```
 
