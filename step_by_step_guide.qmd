@@ -27,14 +27,13 @@ Please follow the [pre-workshop instructions](/docs/pre_workshop.html) to make s
 ## Attach packages
 
 ```{r pkg-attach, results='hide', warning=FALSE, message=FALSE}
-library(tidyverse) # general data wrangling and visualisation
-library(pander) # nice tables
-library(neotoma2) # obtain data from the Neotoma database
-library(Bchron) # age-depth modeling
-library(REcopol) # estimating diversity
-library(mgcv) # GAM fitting
-library(gratia) # GAM visualisation
-library(janitor) # string cleaning
+library(tidyverse) # general data wrangling and visualisation ✨
+library(pander) # nice tables 😍
+library(neotoma2) # access to the Neotoma database 🌿
+library(Bchron) # age-depth modelling 🕰️
+library(mgcv) # GAM fitting 📈
+library(marginaleffects) # predicting trends 📈
+library(janitor) # string cleaning 🧹
 ```
 
 ```{r theme-setup, include=FALSE}
@@ -334,7 +333,7 @@ data_diversity <-
   REcopol::diversity_estimate(
     data_source = sel_counts_selected,
     sel_method = "taxonomic"
-)
+  )
 
 head(data_diversity)
 ```
@@ -370,16 +369,37 @@ Now we can visualise the results.
 
 ```{r plot_gam}
 age_dummy <-
-  gratia::data_slice(
-    mod_n0,
-    age = gratia::evenly(age)
+  tibble::tibble(
+    age = seq(
+      from = min(data_to_fit$age),
+      to = max(data_to_fit$age),
+      length.out = 100
+    )
   )
 
 data_predicted <-
-  REcopol::predic_model(
-    model_source = mod_n0,
-    data_source = age_dummy
-  )
+  marginaleffects::predictions(
+    model = mod_n0,
+    newdata = age_dummy
+  ) %>%
+  tibble::as_tibble()  %>% 
+  dplyr::rename(
+    fit = estimate,
+    lwr = conf.low,
+    upr = conf.high,
+    sd_error = std.error
+  ) %>%
+  dplyr::select(
+    dplyr::all_of(
+      c(
+        "age",
+        "fit",
+        "sd_error",
+        "lwr",
+        "upr"
+      )
+    )
+  ) 
 
 data_predicted %>%
   ggplot2::ggplot(
