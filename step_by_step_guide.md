@@ -1,4 +1,5 @@
-# Step-by-step guide
+Step-by-step guide
+================
 
 This workflow should serve as step-by-step guidance starting from downloading a dataset from Neotoma and processing it, to estimating ecosystem property (diversity in this case).
 
@@ -13,14 +14,14 @@ Please follow the [pre-workshop instructions](/docs/pre_workshop.html) to make s
 ## Attach packages
 
 ``` r
-library(tidyverse) # general data wrangling and visualisation
-library(pander) # nice tables
-library(neotoma2) # obtain data from the Neotoma database
-library(Bchron) # age-depth modeling
-library(REcopol) # estimating diversity
-library(mgcv) # GAM fitting
-library(gratia) # GAM visualisation
-library(janitor) # string cleaning
+library(tidyverse) # general data wrangling and visualisation ✨
+library(pander) # nice tables 😍
+library(neotoma2) # access to the Neotoma database 🌿
+library(Bchron) # age-depth modelling 🕰️
+library(mgcv) # GAM fitting 📈
+library(marginaleffects) # predicting trends 📈
+library(janitor) # string cleaning 🧹
+library(here) # for working directory 🗺️
 ```
 
 ## Download a dataset from Neotoma
@@ -112,7 +113,7 @@ sel_counts_selected %>%
   )
 ```
 
-![](step_by_step_guide_files/figure-commonmark/count_vis-1.png)
+![](step_by_step_guide_files/figure-gfm/count_vis-1.png)
 
 ## Preparation of the levels
 
@@ -159,7 +160,7 @@ Visually check the age-depth models
 plot(ad_model)
 ```
 
-![](step_by_step_guide_files/figure-commonmark/bchron_figure-1.png)
+![](step_by_step_guide_files/figure-gfm/bchron_figure-1.png)
 
 #### Predict ages
 
@@ -240,18 +241,36 @@ sel_counts_selected %>%
   )
 ```
 
-![](step_by_step_guide_files/figure-commonmark/vis_data_with_ages-1.png)
+![](step_by_step_guide_files/figure-gfm/vis_data_with_ages-1.png)
 
 ## Estimation of ecosystem property
 
 Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more information. Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
 
 ``` r
+if (
+  "REcopol" %in% utils::installed.packages()
+) {
+  library(REcopol)
+
+  get_diversity <-
+    REcopol::diversity_estimate
+} else {
+  source(
+    here::here(
+      "R/get_diversity.R"
+    )
+  )
+}
+#> R-Ecopol version 0.0.1
+```
+
+``` r
 data_diversity <-
-  REcopol::diversity_estimate(
+  get_diversity(
     data_source = sel_counts_selected,
     sel_method = "taxonomic"
-)
+  )
 
 head(data_diversity)
 ```
@@ -310,12 +329,12 @@ summary(mod_n0)
 #> 
 #> Approximate significance of smooth terms:
 #>          edf Ref.df     F p-value    
-#> s(age) 4.629   5.78 14.31  <2e-16 ***
+#> s(age) 4.633  5.786 14.31  <2e-16 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> R-sq.(adj) =  0.593   Deviance explained = 59.7%
-#> -REML = 178.36  Scale est. = 0.58253   n = 64
+#> -REML = 178.32  Scale est. = 0.58252   n = 64
 
 # mgcv::gam.check(mod_n0, k.sample = 10e3, k.rep = 1e3)
 ```
@@ -324,15 +343,36 @@ Now we can visualise the results.
 
 ``` r
 age_dummy <-
-  gratia::data_slice(
-    mod_n0,
-    age = gratia::evenly(age)
+  tibble::tibble(
+    age = seq(
+      from = min(data_to_fit$age),
+      to = max(data_to_fit$age),
+      length.out = 100
+    )
   )
 
 data_predicted <-
-  REcopol::predic_model(
-    model_source = mod_n0,
-    data_source = age_dummy
+  marginaleffects::predictions(
+    model = mod_n0,
+    newdata = age_dummy
+  ) %>%
+  tibble::as_tibble() %>%
+  dplyr::rename(
+    fit = estimate,
+    lwr = conf.low,
+    upr = conf.high,
+    sd_error = std.error
+  ) %>%
+  dplyr::select(
+    dplyr::all_of(
+      c(
+        "age",
+        "fit",
+        "sd_error",
+        "lwr",
+        "upr"
+      )
+    )
   )
 
 data_predicted %>%
@@ -365,4 +405,4 @@ data_predicted %>%
   )
 ```
 
-![](step_by_step_guide_files/figure-commonmark/plot_gam-1.png)
+![](step_by_step_guide_files/figure-gfm/plot_gam-1.png)
