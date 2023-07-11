@@ -75,5 +75,5 @@ The workshop entitled **"How can paleoecological-data be used to help define saf
 <br>
 
 * ### Ke Zhang <img src="http://www.niglas.cas.cn/yjsjy_165790/dsjs/bshshdsh/zrdlx/202005/W020200826684472609819.jpg" align="right" width="120" />
-  * (kzhang@niglas.ac.cn) 
+  * (kzhang@niglas.ac.cn) [![orcid](https://img.shields.io/badge/orcid-0000--0002--1841--9016-brightgreen.svg)](https://orcid.org/0000-0002-1841-9016)
   * Nanjing Institute of Geography and Limnology, Chinese Academy of Sciences , China
