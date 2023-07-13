@@ -1,0 +1,72 @@
+---
+title: "Workflows developed to process pollen data to estimate components of ecosystem change"
+author: 
+ - "Alistair Seddon"
+ - "Ondřej Mottl" 
+format: 
+  revealjs:
+    theme: moon
+    incremental: true 
+---
+
+## PAGES Planetary Boundaries Working Group
+-	Holocene variability is a key component of planetary boundaries concept
+-	Temporal dynamics are a critical concept
+-	How can we use palaeoecological (and related fields) data to address the planetary boundaries concept?
+
+---
+
+## Example from pollen data
+-	We need a metric (or series of metrics that can reflect something related to the planetary boundary). We can discuss in more detail about the metric, but for now we will show you with diversity of pollen data.
+-	We need a method for describing the variability (e.g. using a generalised additive model)
+-	If we are talking global planetary boundaries, we need to look at multiple records, so need a reproducible method to show how to do this. (Giving this is one of the aims of the workshops)
+
+---
+
+## Diversity metrics 
+-	Hill Numbers (some theory behind them)
+-	Could relate to the Biosphere integrity index suggested by Mace et al. 2014
+-	Note that Other metrics are available
+
+---
+
+## GAMs
+-	Statistical model to show non-linear trends through time
+-	Gavin Simpson has done much of the work to transfer this method to palaeoecological data (Simpson 2018)
+-	Models a trend (e.g. diversity against time) using a series of basis functions, allowing non-linear trends to be fit to data
+-	‘Generalised’ framework means it is highly flexible, used on multiple data types
+-	Note that it doesn’t necessarily tell us where we should draw the boundary, but it does give us a statistically robust description of the variability which we can then use to make informed decisions
+
+---
+
+## Reproducible workflows
+-	If integrating across multiple sites then it is important to have standardized data that are comparable
+-	In pollen this means- same depositional environment, same age-depth models, same levels of taxonomic harmonisation, (same/ similar temporal resolution), comparable temporal ranges etc.
+-	We have been developing reproducible workflows for pollen data in the HOPE project, we will show an example of this today.
+
+---
+
+## Aims of this practical exercise
+1.	Give an example data preparation and analysis of one metric related to the Biodiversity Planetary Boundary from a set of pollen counts from **Lingua d'Oca** (ID = 52162) record by Feredico Di Rita.
+2.	Give hands-on practice of applying the code to other examples (e.g. downloaded from Neotoma)
+3.	Stimulate some discussion points related to the types of metrics/ standardization procedures that are relevant for your data and for the planetary boundaries concepts
+
+---
+
+## Practical exercise
+
+Go to bit.ly/INQUA2023-PBW
+
+---
+
+## RoC
+
+---
+
+## Wrap up/ Discussion points
+
+-	Used as an example of how to process the pollen data in standardized way
+-	We actually have already developed a whole workflow which enables you to do this on Neotoma and other datasets (FossilPol)
+-	We have modelled change in diversity. What this tells us in the planetary boundary discussions remains open ended, and is the focus of the group. Open for discussion on this here
+-	What other metrics/ ecosystem components could be used on pollen data? What about other proxy types.
+-	What would be the challenges of doing large syntheses in the context of the planetary boundaries for your data types?
