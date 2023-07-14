@@ -6,7 +6,7 @@ author:
 format: 
   revealjs:
     self-contained: true
-    theme: moon
+    theme: white
     incremental: true 
     
 ---
@@ -15,7 +15,7 @@ format:
 
 -	Holocene variability is a key component of planetary boundaries concept
 -	Focus on temporal dynamics/ safe operating spaces
-- **"To meet the challenge of maintaining the Holocene state, we propose a framework based on 'planetary boundaries'. These boundaries define the safe operating space for humanity with respect to the Earth system and are associated with the planet's biophysical subsystems or processes."** Steffen et al. 2009 
+- "*To meet the challenge of maintaining the Holocene state, we propose a framework based on 'planetary boundaries'. These boundaries define the safe operating space for humanity with respect to the Earth system and are associated with the planet's biophysical subsystems or processes.*" Steffen et al. 2009 
 
 ---
 
@@ -116,7 +116,9 @@ format:
 
 ## Practical exercise
 
-Go to bit.ly/INQUA2023-PBW
+### Go to bit.ly/INQUA2023-PBW
+
+![](presentation_files/figures/Fig_qr_code_webisite.png){fig-align="center"}
 
 ---
 
