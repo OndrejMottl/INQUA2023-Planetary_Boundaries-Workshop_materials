@@ -5,9 +5,10 @@ author:
  - "Ondřej Mottl" 
 format: 
   revealjs:
+    self-contained: true
     theme: moon
     incremental: true 
-    embed-resources: true
+    
 ---
 
 ## PAGES Planetary Boundaries Working Group
