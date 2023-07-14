@@ -329,69 +329,118 @@
 <h2>PAGES Planetary Boundaries Working Group</h2>
 <ul>
 <li class="fragment">Holocene variability is a key component of planetary boundaries concept</li>
-<li class="fragment">Temporal dynamics are a critical concept</li>
+<li class="fragment">Focus on temporal dynamics/ safe operating spaces</li>
+<li class="fragment"><strong>“To meet the challenge of maintaining the Holocene state, we propose a framework based on ‘planetary boundaries’. These boundaries define the safe operating space for humanity with respect to the Earth system and are associated with the planet’s biophysical subsystems or processes.”</strong> Steffen et al.&nbsp;2009</li>
+</ul>
+</section>
+<section id="introduction" class="slide level2">
+<h2>Introduction</h2>
+<div class="columns">
+<div class="column" style="width:60%;">
+<ul>
 <li class="fragment">How can we use palaeoecological (and related fields) data to address the planetary boundaries concept?</li>
 </ul>
+</div><div class="column" style="width:40%;">
+<p><img data-src="presentation_files/figures/Fig_planetary_boundaries.jpg" class="fragment"></p>
+</div>
+</div>
 </section>
 <section id="example-from-pollen-data" class="slide level2">
 <h2>Example from pollen data</h2>
 <ul>
-<li class="fragment">We need a metric (or series of metrics that can reflect something related to the planetary boundary). We can discuss in more detail about the metric, but for now we will show you with diversity of pollen data.</li>
+<li class="fragment">Focus on temporal dynamics</li>
+<li class="fragment">We need a metric (or series of metrics that can reflect something related to the planetary boundary)</li>
 <li class="fragment">We need a method for describing the variability (e.g.&nbsp;using a generalised additive model)</li>
-<li class="fragment">If we are talking global planetary boundaries, we need to look at multiple records, so need a reproducible method to show how to do this. (Giving this is one of the aims of the workshops)</li>
+<li class="fragment">If we are talking global planetary boundaries, we need to look at multiple records, so need a reproducible method to show how to do this.</li>
 </ul>
 </section>
 <section id="diversity-metrics" class="slide level2">
 <h2>Diversity metrics</h2>
+<div class="columns">
+<div class="column" style="width:40%;">
 <ul>
-<li class="fragment">Hill Numbers (some theory behind them)</li>
-<li class="fragment">Could relate to the Biosphere integrity index suggested by Mace et al.&nbsp;2014</li>
-<li class="fragment">Note that Other metrics are available</li>
+<li class="fragment">Richness, evenness etc., can be estimated using Hill Numbers</li>
+<li class="fragment">One component of ‘Ecosystem Condition’ (see, e.g.&nbsp;Dearing et al.&nbsp;2014)</li>
+<li class="fragment">Other metrics are available!</li>
 </ul>
+</div><div class="column" style="width:60%;">
+<p><img data-src="presentation_files/figures/Fig_Dearing_regional_operating_spaces.jpeg" class="fragment"></p>
+</div>
+</div>
 </section>
 <section id="gams" class="slide level2">
 <h2>GAMs</h2>
 <ul>
 <li class="fragment">Statistical model to show non-linear trends through time</li>
-<li class="fragment">Gavin Simpson has done much of the work to transfer this method to palaeoecological data (Simpson 2018)</li>
+<li class="fragment">Gavin Simpson has done the groundwork to transfer this method to palaeoecological data (Simpson 2018, Presentation on Wednesday, 11-11.15)</li>
 <li class="fragment">Models a trend (e.g.&nbsp;diversity against time) using a series of basis functions, allowing non-linear trends to be fit to data</li>
+</ul>
+</section>
+<section id="gams-1" class="slide level2">
+<h2>GAMs</h2>
+<ul>
 <li class="fragment">‘Generalised’ framework means it is highly flexible, used on multiple data types</li>
 <li class="fragment">Note that it doesn’t necessarily tell us where we should draw the boundary, but it does give us a statistically robust description of the variability which we can then use to make informed decisions</li>
 </ul>
 </section>
+<section id="gams-2" class="slide level2">
+<h2>GAMs</h2>
+
+<img data-src="presentation_files/figures/Fig_simpson_gams.jpeg" class="r-stretch quarto-figure-center"></section>
 <section id="reproducible-workflows" class="slide level2">
 <h2>Reproducible workflows</h2>
 <ul>
 <li class="fragment">If integrating across multiple sites then it is important to have standardized data that are comparable</li>
 <li class="fragment">In pollen this means- same depositional environment, same age-depth models, same levels of taxonomic harmonisation, (same/ similar temporal resolution), comparable temporal ranges etc.</li>
-<li class="fragment">We have been developing reproducible workflows for pollen data in the HOPE project, we will show an example of this today.</li>
+<li class="fragment">We have been developing reproducible workflows for pollen data in the HOPE project, we will show an example of this today (see Ondrej’s poster)</li>
 </ul>
+</section>
+<section id="reproducible-workflows-1" class="slide level2">
+<h2>Reproducible workflows</h2>
+<div class="columns">
+<div class="column" style="width:10%;">
+<p><img data-src="https://hope-uib-bio.github.io/FOSSILPOL-website/figures/Logo%20FOSSILPOL%20big%20-%20600ppi.png"></p>
+</div><div class="column" style="width:90%;">
+<p><img data-src="presentation_files/figures/Fig_FOSSILPOL_workflow.jpg"></p>
+</div>
+</div>
 </section>
 <section id="aims-of-this-practical-exercise" class="slide level2">
 <h2>Aims of this practical exercise</h2>
 <ol type="1">
 <li class="fragment">Give an example data preparation and analysis of one metric related to the Biodiversity Planetary Boundary from a set of pollen counts from <strong>Lingua d’Oca</strong> (ID = 52162) record by Feredico Di Rita.</li>
 <li class="fragment">Give hands-on practice of applying the code to other examples (e.g.&nbsp;downloaded from Neotoma)</li>
-<li class="fragment">Stimulate some discussion points related to the types of metrics/ standardization procedures that are relevant for your data and for the planetary boundaries concepts</li>
+<li class="fragment">Stimulate some discussion points related to the types of metrics/ standardization procedures that are relevant for your data and for the Planetary Boundaries’ concepts</li>
 </ol>
 </section>
 <section id="practical-exercise" class="slide level2">
 <h2>Practical exercise</h2>
 <p>Go to bit.ly/INQUA2023-PBW</p>
 </section>
-<section id="roc" class="slide level2">
-<h2>RoC</h2>
-</section>
-<section id="wrap-up-discussion-points" class="slide level2">
-<h2>Wrap up/ Discussion points</h2>
+<section id="example-global-changes-in-rates-of-vegetation-change" class="slide level2">
+<h2>Example: Global changes in rates of vegetation change</h2>
+
+<img data-src="presentation_files/figures/Fig_RoC.jpeg" class="r-stretch quarto-figure-center"></section>
+<section id="wrap-up" class="slide level2">
+<h2>Wrap up</h2>
 <ul>
-<li class="fragment">Used as an example of how to process the pollen data in standardized way</li>
-<li class="fragment">We actually have already developed a whole workflow which enables you to do this on Neotoma and other datasets (FossilPol)</li>
-<li class="fragment">We have modelled change in diversity. What this tells us in the planetary boundary discussions remains open ended, and is the focus of the group. Open for discussion on this here</li>
-<li class="fragment">What other metrics/ ecosystem components could be used on pollen data? What about other proxy types.</li>
+<li class="fragment">Used this one example of how to process the pollen data in standardized methodology</li>
+<li class="fragment">See the whole workflow which enables you to do this on Neotoma and other datasets (FossilPol).</li>
+<li class="fragment">Interpretation of results in relation to the Planetary Boundaries would be open ended, and is the focus of the group and for discussion here.</li>
+</ul>
+</section>
+<section id="discussion-points" class="slide level2">
+<h2>Discussion points</h2>
+<ul>
+<li class="fragment">Here we focused on temporal dynamics, but how can we get from response to control variables?</li>
+<li class="fragment">What other metrics/ ecosystem components could be used on pollen data? What about other proxy types</li>
 <li class="fragment">What would be the challenges of doing large syntheses in the context of the planetary boundaries for your data types?</li>
 </ul>
-<div class="footer footer-default">
+</section>
+<section id="discussion-points-1" class="slide level2">
+<h2>Discussion points</h2>
+
+<img data-src="presentation_files/figures/Fig-response_control_variables.jpeg" class="r-stretch quarto-figure-center"><div class="footer footer-default">
 
 </div>
 </section>
