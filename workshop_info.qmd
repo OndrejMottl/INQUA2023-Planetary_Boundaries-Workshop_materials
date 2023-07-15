@@ -17,7 +17,21 @@ The workshop entitled **"How can paleoecological-data be used to help define saf
 
 * Date: **16.07.2023**
 * Time: **14:00 - 16:00**
-* Location: **Room 14, Building Scienze della Terra, entrance Geochimica (CU009), third floor - [link](https://www.dst.uniroma1.it/Aula14)**
+* Location: **Room 14, Building Scienze della Terra, entrance Geochimica (CU009), third floor**
+
+:::: {.columns}
+
+::: {.column width="60%"}
+![](map/PBW_map.png)
+:::
+
+::: {.column width="40%"}
+![](map/aula_14.jpg)
+:::
+
+::::
+
+![]()
 
 <br>
 
