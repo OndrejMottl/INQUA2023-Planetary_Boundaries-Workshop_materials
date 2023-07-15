@@ -9,6 +9,8 @@ navbar:
       href: pre_workshop.html      
     - text: "A step-by-step guide"
       href: step_by_step_guide.html
+    - text: "Presentation"
+      href: presentation.html
 output:
   html_document:
     toc: FALSE
