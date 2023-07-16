@@ -37,7 +37,7 @@ library(janitor) # string cleaning 🧹
 library(here) # for working directory 🗺️
 ```
 
-```{r theme-setup, include=FALSE}
+```{r theme-setup, include=TRUE}
 ggplot2::theme_set(
   ggplot2::theme_bw() +
     ggplot2::theme(
@@ -53,8 +53,7 @@ ggplot2::theme_set(
 
 Here we have selected the **Lingua d'Oca** (ID = 52162) record by Feredico Di Rita.
 
-Reference paper:
-Di Rita, F., A. Celant, and D. Magri. 2010. Holocene environmental instability in the wetland north of the Tiber delta (Rome, Italy): sea-lake-man interactions. *Journal of Paleolimnology* 44:51-67. 
+Reference paper: Di Rita, F., A. Celant, and D. Magri. 2010. Holocene environmental instability in the wetland north of the Tiber delta (Rome, Italy): sea-lake-man interactions. *Journal of Paleolimnology* 44:51-67.
 
 ```{r download_of_data, results='hide', warning=FALSE, message=FALSE}
 sel_dataset_download <-
@@ -159,7 +158,7 @@ pander::pandoc.table(head(sel_level))
 
 We highly recommend recalculating the age-depth model 'de Novo' as different methodologies might have been applied to each record. However, age-depth modelling is a very complicated topic, which we will not dig into today. Just note that many parts of the age-depth modelling need attention (selection of chronology control points, using correct calibration curves, etc.).
 
-```{r run_bchron, eval=FALSE, echo=FALSE}
+```{r run_bchron, results='hide', warning=FALSE}
 # Here we only present a few of the important steps of preparation of the
 #   chronology control table. There are many more potential issues, but
 #   solving those is not the focus of this workflow.
@@ -184,7 +183,7 @@ sel_chron_control_table <-
     error = replace(error, error == 0, 1),
     error = ifelse(is.na(error), 1, error)
   ) %>%
-    # As Bchron cannot accept an thickness of 0, we need to replace the value with 1
+  # As Bchron cannot accept an thickness of 0, we need to replace the value with 1
   dplyr::mutate(
     thickness = ifelse(is.na(thickness), 1, thickness)
   ) %>%
@@ -222,20 +221,6 @@ ad_model <-
     iterations = n_iteration,
     burn = n_burn,
     thin = n_thin
-  )
-
-readr::write_rds(
-  ad_model,
-  here::here("R/Data/bchron.rds")
-)
-```
-
-Let's load a model, which we already prepared.
-
-```{r, load_age_depth_model}
-ad_model <-
-  readr::read_rds(
-    here::here("R/Data/bchron.rds")
   )
 ```
 
@@ -277,8 +262,28 @@ sel_level_predicted <-
 Let's now make a simple pollen diagram with proportions of the main pollen taxa (x-axis) against our estimated ages along depth (y-axis).
 
 ```{r vis_data_with_ages}
-sel_counts_selected %>%
-  REcopol:::transfer_into_proportions() %>%
+data_rownames <-
+  sel_counts_selected %>%
+  tibble::column_to_rownames("sample_id")
+
+data_percentages <-
+  (data_rownames / rowSums(data_rownames)) * 100
+
+col_sum_non_zero <-
+  colSums(data_percentages) > 0
+
+data_filtered <-
+  data_percentages %>%
+  dplyr::select(
+    dplyr::any_of(
+      names(col_sum_non_zero)[col_sum_non_zero]
+    )
+  ) %>%
+  tibble::rownames_to_column("sample_id") %>%
+  dplyr::relocate(sample_id) %>%
+  tibble::tibble() 
+
+data_filtered %>%
   dplyr::inner_join(
     sel_level_predicted,
     by = dplyr::join_by(sample_id)
@@ -326,23 +331,126 @@ sel_counts_selected %>%
 
 ## Estimation of ecosystem property
 
-Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more information.
-Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
+Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more information. Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
 
 ```{r workaround, results='hide', warning=FALSE}
-if (
-  "REcopol" %in% utils::installed.packages()
-) {
-  library(REcopol)
+# function to estimate diversity
+get_diversity <- function(data_source, round = TRUE, sel_method = "") {
+  # helper function
+  get_diversity_taxonomic <- function(data_matrix, sample_size) {
+    hill0 <- function(data, sample_size) {
+      data_sub <- data[data > 0]
+      data_sum <- sum(data_sub)
+      if (sample_size <= data_sum) {
+        res <- sum(1 - exp(lchoose(data_sum - data_sub, sample_size) -
+          lchoose(data_sum, sample_size)))
+        return(res)
+      } else {
+        return(0)
+      }
+    }
+    fk_hat <- function(data, sample_size) {
+      data_sub <- data[data > 0]
+      data_sum <- sum(data_sub)
+      if (sample_size <= data_sum) {
+        sub <- function(k) {
+          sum(exp(lchoose(data_sub, k) + lchoose(data_sum -
+            data_sub, sample_size - k) - lchoose(
+            data_sum,
+            sample_size
+          )))
+        }
+        res <- sapply(1:sample_size, sub)
+        return(res)
+      } else {
+        return(0)
+      }
+    }
+    hill1 <- function(data, sample_size) {
+      data_sub <- data[data > 0]
+      data_sum <- sum(data_sub)
+      if (sample_size <= data_sum) {
+        k <- 1:sample_size
+        res <- exp(-sum(k / sample_size * log(k / sample_size) *
+          fk_hat(data_sub, sample_size)))
+        return(res)
+      } else {
+        return(0)
+      }
+    }
+    hill2 <- function(data, sample_size) {
+      data_sub <- data[data > 0]
+      data_sum <- sum(data_sub)
+      if (sample_size <= data_sum) {
+        res <- 1 / (1 / sample_size + (1 - 1 / sample_size) * sum(data_sub *
+          (data_sub - 1) / data_sum / (data_sum - 1)))
+        return(res)
+      } else {
+        return(0)
+      }
+    }
+    est_n_0 <-
+      sapply(sample_size, function(n) {
+        apply(data_matrix, 1, hill0, sample_size = n)
+      })
+    est_n_1 <-
+      sapply(sample_size, function(n) {
+        apply(data_matrix, 1, hill1, sample_size = n)
+      })
+    est_n_2 <-
+      sapply(sample_size, function(n) {
+        apply(data_matrix, 1, hill2, sample_size = n)
+      })
+    hill_diversity <-
+      cbind(est_n_0, est_n_1, est_n_2, est_n_1 -
+        est_n_2, est_n_2 / est_n_1, est_n_1 / est_n_0) %>%
+      as.data.frame() %>%
+      tibble::as_tibble() %>%
+      dplyr::mutate(sample_id = row.names(data_matrix)) %>%
+      tibble::column_to_rownames("sample_id") %>%
+      purrr::set_names(
+        nm = c(
+          "n0",
+          "n1", "n2", "n1_minus_n2", "n2_divided_by_n1", "n1_divided_by_n0"
+        )
+      )
+    return(hill_diversity)
+  }
 
-  get_diversity <-
-    REcopol::diversity_estimate
-} else {
-  source(
-    here::here(
-      "R/get_diversity.R"
+  if (
+    isTRUE(round)
+  ) {
+    data_matrix <-
+      data_source %>%
+      tibble::column_to_rownames("sample_id") %>%
+      dplyr::mutate_all(., .f = floor) %>%
+      as.matrix() %>%
+      round()
+  } else {
+    data_matrix <-
+      data_source %>%
+      tibble::column_to_rownames("sample_id") %>%
+      as.matrix()
+  }
+
+  sample_size <-
+    apply(data_matrix, 1, sum) %>%
+    floor() %>%
+    min()
+
+  div <-
+    get_diversity_taxonomic(
+      data_matrix = data_matrix,
+      sample_size = sample_size
     )
-  )
+
+  res <-
+    div %>%
+    tibble::rownames_to_column("sample_id") %>%
+    dplyr::relocate(sample_id) %>%
+    as.data.frame() %>%
+    tibble::as_tibble()
+  return(res)
 }
 
 ```
