@@ -144,6 +144,14 @@ format:
 
 ---
 
+## Example: Global changes in rates of vegetation change
+
+<br>
+
+![](presentation_files/figures/roc_paper_header.png){fig-align="center"}
+
+---
+
 ## Wrap up
 
 -	Used this example of how to process the pollen data in standardized methodology
