@@ -24,6 +24,18 @@ library(janitor) # string cleaning 🧹
 library(here) # for working directory 🗺️
 ```
 
+``` r
+ggplot2::theme_set(
+  ggplot2::theme_bw() +
+    ggplot2::theme(
+      axis.title = ggplot2::element_text(size = 25),
+      axis.text = ggplot2::element_text(size = 15),
+      strip.text = ggplot2::element_text(size = 15),
+      panel.grid = ggplot2::element_blank()
+    )
+)
+```
+
 ## Download a dataset from Neotoma
 
 Here we have selected the **Lingua d’Oca** (ID = 52162) record by Feredico Di Rita.
@@ -145,12 +157,69 @@ head(sel_level)
 
 We highly recommend recalculating the age-depth model ‘de Novo’ as different methodologies might have been applied to each record. However, age-depth modelling is a very complicated topic, which we will not dig into today. Just note that many parts of the age-depth modelling need attention (selection of chronology control points, using correct calibration curves, etc.).
 
-Let’s load a model, which we already prepared.
-
 ``` r
+# Here we only present a few of the important steps of preparation of the
+#   chronology control table. There are many more potential issues, but
+#   solving those is not the focus of this workflow.
+
+# First, get the chronologies and check which we want to use used
+sel_chron_control_table_download <-
+  neotoma2::chroncontrols(sel_dataset_download)
+
+# prepare the table
+sel_chron_control_table <-
+  sel_chron_control_table_download %>%
+  # Here select the ID of one of the chronology
+  dplyr::filter(chronologyid == 37228) %>%
+  tibble::as_tibble() %>%
+  # Here we calculate the error as the average of the age `limitolder` and
+  #   `agelimityounger`
+  dplyr::mutate(
+    error = round((agelimitolder - agelimityounger) / 2)
+  ) %>%
+  # As Bchron cannot accept an error of 0, we need to replace the value with 1
+  dplyr::mutate(
+    error = replace(error, error == 0, 1),
+    error = ifelse(is.na(error), 1, error)
+  ) %>%
+  # As Bchron cannot accept an thickness of 0, we need to replace the value with 1
+  dplyr::mutate(
+    thickness = ifelse(is.na(thickness), 1, thickness)
+  ) %>%
+  # We need to specify which calibration curve should be used for what point
+  dplyr::mutate(
+    curve = ifelse(as.data.frame(sel_dataset_download)["lat"] > 0, "intcal20", "shcal20"),
+    curve = ifelse(chroncontroltype != "Radiocarbon", "normal", curve)
+  ) %>%
+  tibble::column_to_rownames("chroncontrolid") %>%
+  dplyr::arrange(depth) %>%
+  dplyr::select(
+    chroncontrolage, error, depth, thickness, chroncontroltype, curve
+  )
+
+i_multiplier <- 0.1 # increase to 5
+
+# Those are default values suggested by the Bchron package
+n_iteration_default <- 10e3
+n_burn_default <- 2e3
+n_thin_default <- 8
+
+# Let's multiply them by our i_multiplier
+n_iteration <- n_iteration_default * i_multiplier
+n_burn <- n_burn_default * i_multiplier
+n_thin <- max(c(1, n_thin_default * i_multiplier))
+
+# run Bchron
 ad_model <-
-  readr::read_rds(
-    here::here("R/Data/bchron.rds")
+  Bchron::Bchronology(
+    ages = sel_chron_control_table$chroncontrolage,
+    ageSds = sel_chron_control_table$error,
+    positions = sel_chron_control_table$depth,
+    calCurves = sel_chron_control_table$curve,
+    positionThicknesses = sel_chron_control_table$thickness,
+    iterations = n_iteration,
+    burn = n_burn,
+    thin = n_thin
   )
 ```
 
@@ -194,8 +263,28 @@ sel_level_predicted <-
 Let’s now make a simple pollen diagram with proportions of the main pollen taxa (x-axis) against our estimated ages along depth (y-axis).
 
 ``` r
-sel_counts_selected %>%
-  REcopol:::transfer_into_proportions() %>%
+data_rownames <-
+  sel_counts_selected %>%
+  tibble::column_to_rownames("sample_id")
+
+data_percentages <-
+  (data_rownames / rowSums(data_rownames)) * 100
+
+col_sum_non_zero <-
+  colSums(data_percentages) > 0
+
+data_filtered <-
+  data_percentages %>%
+  dplyr::select(
+    dplyr::any_of(
+      names(col_sum_non_zero)[col_sum_non_zero]
+    )
+  ) %>%
+  tibble::rownames_to_column("sample_id") %>%
+  dplyr::relocate(sample_id) %>%
+  tibble::tibble() 
+
+data_filtered %>%
   dplyr::inner_join(
     sel_level_predicted,
     by = dplyr::join_by(sample_id)
@@ -248,21 +337,124 @@ sel_counts_selected %>%
 Now we will use our prepared fossil pollen data to estimate the diversity. We will use {REcopol} package, which has easy-to-use functions to analyse fossil pollen data. See package [website](https://hope-uib-bio.github.io/R-Ecopol-package/) for more information. Specifically, we will estimate rarefied values of [Hill numbers](https://esajournals.onlinelibrary.wiley.com/doi/abs/10.2307/1934352).
 
 ``` r
-if (
-  "REcopol" %in% utils::installed.packages()
-) {
-  library(REcopol)
+# function to estimate diversity
+get_diversity <- function(data_source, round = TRUE, sel_method = "") {
+  # helper function
+  get_diversity_taxonomic <- function(data_matrix, sample_size) {
+    hill0 <- function(data, sample_size) {
+      data_sub <- data[data > 0]
+      data_sum <- sum(data_sub)
+      if (sample_size <= data_sum) {
+        res <- sum(1 - exp(lchoose(data_sum - data_sub, sample_size) -
+          lchoose(data_sum, sample_size)))
+        return(res)
+      } else {
+        return(0)
+      }
+    }
+    fk_hat <- function(data, sample_size) {
+      data_sub <- data[data > 0]
+      data_sum <- sum(data_sub)
+      if (sample_size <= data_sum) {
+        sub <- function(k) {
+          sum(exp(lchoose(data_sub, k) + lchoose(data_sum -
+            data_sub, sample_size - k) - lchoose(
+            data_sum,
+            sample_size
+          )))
+        }
+        res <- sapply(1:sample_size, sub)
+        return(res)
+      } else {
+        return(0)
+      }
+    }
+    hill1 <- function(data, sample_size) {
+      data_sub <- data[data > 0]
+      data_sum <- sum(data_sub)
+      if (sample_size <= data_sum) {
+        k <- 1:sample_size
+        res <- exp(-sum(k / sample_size * log(k / sample_size) *
+          fk_hat(data_sub, sample_size)))
+        return(res)
+      } else {
+        return(0)
+      }
+    }
+    hill2 <- function(data, sample_size) {
+      data_sub <- data[data > 0]
+      data_sum <- sum(data_sub)
+      if (sample_size <= data_sum) {
+        res <- 1 / (1 / sample_size + (1 - 1 / sample_size) * sum(data_sub *
+          (data_sub - 1) / data_sum / (data_sum - 1)))
+        return(res)
+      } else {
+        return(0)
+      }
+    }
+    est_n_0 <-
+      sapply(sample_size, function(n) {
+        apply(data_matrix, 1, hill0, sample_size = n)
+      })
+    est_n_1 <-
+      sapply(sample_size, function(n) {
+        apply(data_matrix, 1, hill1, sample_size = n)
+      })
+    est_n_2 <-
+      sapply(sample_size, function(n) {
+        apply(data_matrix, 1, hill2, sample_size = n)
+      })
+    hill_diversity <-
+      cbind(est_n_0, est_n_1, est_n_2, est_n_1 -
+        est_n_2, est_n_2 / est_n_1, est_n_1 / est_n_0) %>%
+      as.data.frame() %>%
+      tibble::as_tibble() %>%
+      dplyr::mutate(sample_id = row.names(data_matrix)) %>%
+      tibble::column_to_rownames("sample_id") %>%
+      purrr::set_names(
+        nm = c(
+          "n0",
+          "n1", "n2", "n1_minus_n2", "n2_divided_by_n1", "n1_divided_by_n0"
+        )
+      )
+    return(hill_diversity)
+  }
 
-  get_diversity <-
-    REcopol::diversity_estimate
-} else {
-  source(
-    here::here(
-      "R/get_diversity.R"
+  if (
+    isTRUE(round)
+  ) {
+    data_matrix <-
+      data_source %>%
+      tibble::column_to_rownames("sample_id") %>%
+      dplyr::mutate_all(., .f = floor) %>%
+      as.matrix() %>%
+      round()
+  } else {
+    data_matrix <-
+      data_source %>%
+      tibble::column_to_rownames("sample_id") %>%
+      as.matrix()
+  }
+
+  sample_size <-
+    apply(data_matrix, 1, sum) %>%
+    floor() %>%
+    min()
+
+  div <-
+    get_diversity_taxonomic(
+      data_matrix = data_matrix,
+      sample_size = sample_size
     )
-  )
+
+  res <-
+    div %>%
+    tibble::rownames_to_column("sample_id") %>%
+    dplyr::relocate(sample_id) %>%
+    as.data.frame() %>%
+    tibble::as_tibble()
+  return(res)
 }
-#> R-Ecopol version 0.0.1
 ```
 
 ``` r
@@ -323,18 +515,18 @@ summary(mod_n0)
 #> 
 #> Parametric coefficients:
 #>             Estimate Std. Error t value Pr(>|t|)    
-#> (Intercept)   2.9715     0.0221   134.5   <2e-16 ***
+#> (Intercept)   2.9714     0.0221   134.5   <2e-16 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
 #> Approximate significance of smooth terms:
 #>          edf Ref.df     F p-value    
-#> s(age) 4.633  5.786 14.31  <2e-16 ***
+#> s(age) 4.667  5.828 14.31  <2e-16 ***
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 #> 
-#> R-sq.(adj) =  0.593   Deviance explained = 59.7%
-#> -REML = 178.32  Scale est. = 0.58252   n = 64
+#> R-sq.(adj) =  0.596   Deviance explained = 60.1%
+#> -REML = 178.17  Scale est. = 0.58249   n = 64
 
 # mgcv::gam.check(mod_n0, k.sample = 10e3, k.rep = 1e3)
 ```
