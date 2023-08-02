@@ -20,3 +20,24 @@ This workshop, entitled **"How can paleoecological-data be used to help define s
 * [Workshop website](https://bit.ly/INQUA2023-PBW)
 * [GitHub materials for the workshop](https://github.com/OndrejMottl/INQUA2023-Planetary_Boundaries-Workshop_materials)
 
+## NOTE that the workshop has already taken place
+
+### PAGES news report
+
+The Planetary Boundaries Working Group recently convened a stimulating workshop during the INQUA congress held in Rome. INQUA is the largest international quaternary congress, that takes place every five years and draws together experts in the field of quaternary science. Our workshop centred on the synergies between Palaeoecology and Sustainability, utilizing the concepts of Planetary Boundaries and Safe Operating Spaces as a comprehensive framework.
+
+During the initial segment of the workshop, Lindsey Gillson provided valuable insights into the potential contributions of palaeoecology to the existing Planetary Boundaries literature, and outlined the overarching objectives of the working group. 
+
+In the second part of the workshop, Ondrej Mottl and Alistair Seddon led a hands-on data processing exercise in R, where attendees actively engaged with the application of advanced analytical techniques. This practical exercise served as a foundation for participants to explore and understand the utilization of palaeoecological data within the Planetary Boundaries context. For those interested, the code for this exercise is accessible via the following link: [https://bit.ly/INQUA2023-PBW](https://bit.ly/INQUA2023-PBW).
+
+In the third part of the workshop, Ke Zhang introduced a an intriguing case study involving lakes in China, illustrating the group's progress to date in the practical application of palaeoecology towards understanding and addressing planetary boundaries.
+
+Throughout the workshop, there were extensive discussions among the attendees on the potential utilization of palaeoecological data to develop metrics for planetary boundaries. The fruitful exchanges also highlighted the regions that could serve as compelling case studies in the future. This collaborative environment was a pivotal factor in fostering valuable interactions and laying the groundwork for a broader array of case studies.
+
+The workshop not only offered a platform for the Planetary Boundaries Working Group to gain exposure but also set the stage for further research endeavours. The group envisions a promising trajectory towards the establishment of regional or even global meta-analyses, bringing us closer to a more sustainable and resilient future.
+
+![](group_pic_edid.png)
+
+
+
+
